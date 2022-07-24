@@ -27,6 +27,7 @@ async def command_split_team(callback: types.CallbackQuery):
     атрибуты: количество команд
     В инлайне
     """
+    await callback.answer('')
     await callback.message.answer('Выберите количество комманд:', reply_markup=kb_number_of_teams)
 
 
@@ -42,6 +43,7 @@ async def command_split_team_result(callback: types.CallbackQuery):
         await split_teams(4, callback)
     if callback.data == "five_teams":
         await split_teams(5, callback)
+    await callback.answer('')
     # else:
     #     await callback.message.answer('Не хочу вас делить. Что-то не так с количеством')
 
@@ -53,6 +55,7 @@ async def command_today_members(callback: types.CallbackQuery):
     """
     list_of_members = await get_active_members_from_database()
     kb_with_members = await create_inline_keyboard_with_members(list_of_members)
+    await callback.answer('')
     # global kb_with_members
     await callback.message.answer('Выберите, кто сегодня присутствует ', reply_markup=kb_with_members)
     # print(callback.message.reply_markup)
@@ -74,7 +77,8 @@ async def command_first_move(callback: types.CallbackQuery):
     """
     list_of_members = await get_active_members_from_database()
     random_member_number = random.randrange(0, (len(list_of_members)-1))
-    await callback.message.answer(f"Первый ходит: {list_of_members[random_member_number]}")
+    await callback.answer('')
+    await callback.message.answer(f"Первый ходит: {list_of_members[random_member_number].full_name}")
 
 
 
@@ -83,6 +87,7 @@ async def command_choose_game_first_criterium(callback: types.CallbackQuery):
     """
 
     """
+    await callback.answer('')
     await callback.message.answer('Выберите критерий игры:', reply_markup=kb_duration_of_game)
 
 
@@ -90,6 +95,7 @@ async def command_choose_game_second_criterium(callback: types.CallbackQuery):
     """
 
     """
+    await callback.answer('')
     await callback.message.answer('Выберите критерий игры:', reply_markup=kb_speech_level_of_game)
 
 
@@ -97,6 +103,7 @@ async def command_choose_game_result(callback: types.CallbackQuery):
     """
 
     """
+    await callback.answer('')
     await callback.message.answer('Результат игры: игра')
 
 
@@ -145,7 +152,7 @@ async def get_all_members_from_database():
 async def create_inline_keyboard_with_members(list_of_members: list):
     kb_with_members = InlineKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     for k, member in enumerate(list_of_members, start=1):
-        member_button = InlineKeyboardButton(f'{member}', callback_data=f"{k}_here")
+        member_button = InlineKeyboardButton(f'{member.full_name}', callback_data=f"{k}_here")
         kb_with_members.add(member_button)
         print(k)
     return kb_with_members
@@ -168,9 +175,10 @@ async def split_teams(teams_count, callback):
 async def print_splited_teams(list_of_lists_with_members, callback):
     for k, list in enumerate(list_of_lists_with_members, start=1):
         await callback.message.answer(f'Команда {k}:')
-        for j in list:
-            await callback.message.answer(f'{j}')
+        for member in list:
+            await callback.message.answer(f'{member.full_name}')
         await callback.message.answer('-------------------------------')
+    await callback.answer('')
 
 
 

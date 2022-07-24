@@ -1,14 +1,16 @@
+import logging
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from keyboards_and_buttons import *
 import random
 from config import *
+from database import *
 
 # Инициализация бота и дэспэтчера
 storage = MemoryStorage()  # Хранение данных
 bot = Bot(token=BOT_TOKEN)  # Инициализация бота
 dp = Dispatcher(bot, storage=storage)  # Диспэтчер
-
+logging.basicConfig(level=logging.INFO)
 
 # сегодняшний вечер клацаем, затем задаём кто есть. затем кто первый, сплит команд, выбор игры
 
@@ -126,20 +128,11 @@ async def command_delete_game():
 
 
 
-async def get_members_from_database():
-    sg = "Сергей"
-    yn = "Ян"
-    vl = "Владислав"
-    al = "Александр"
-    il = "Илья"
-    ap = "Алексей"
-    tm = "Татьяна М"
-    tu = "Татьяна Ю"
-    vs = "Вероника"
-    eu = "Евгения"
-    pv = "Полина"
-    lm = "Лидия"
-    list = [sg, yn, vl, al, il, ap, tm, tu, vs, eu, pv, lm]
+async def get_active_members_from_database():
+    list = []
+    for member in Member:
+        if (member.is_active):
+            list.append(member)
     return list
 
 

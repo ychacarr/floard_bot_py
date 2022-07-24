@@ -51,7 +51,7 @@ async def command_today_members(callback: types.CallbackQuery):
     Показывает список всех наполочников. Пользователь выбирает, кто сегодня присутствует.
     В инлайне
     """
-    list_of_members = await get_members_from_database()
+    list_of_members = await get_active_members_from_database()
     kb_with_members = await create_inline_keyboard_with_members(list_of_members)
     # global kb_with_members
     await callback.message.answer('Выберите, кто сегодня присутствует ', reply_markup=kb_with_members)
@@ -72,7 +72,7 @@ async def command_first_move(callback: types.CallbackQuery):
     Рандомно выбирает того, кто сегодня первый ходит
     В инлайне
     """
-    list_of_members = await get_members_from_database()
+    list_of_members = await get_active_members_from_database()
     random_member_number = random.randrange(0, (len(list_of_members)-1))
     await callback.message.answer(f"Первый ходит: {list_of_members[random_member_number]}")
 
@@ -135,6 +135,12 @@ async def get_active_members_from_database():
             list.append(member)
     return list
 
+async def get_all_members_from_database():
+    list = []
+    for member in Member:
+        list.append(member)
+    return list
+
 
 async def create_inline_keyboard_with_members(list_of_members: list):
     kb_with_members = InlineKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
@@ -146,7 +152,7 @@ async def create_inline_keyboard_with_members(list_of_members: list):
 
 
 async def split_teams(teams_count, callback):
-    list_of_members = await get_members_from_database()
+    list_of_members = await get_active_members_from_database()
     list_of_lists = []
     for member in range(teams_count):
         member = []

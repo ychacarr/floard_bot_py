@@ -6,7 +6,7 @@ from config import *
 
 # Инициализация бота и дэспэтчера
 storage = MemoryStorage()  # Хранение данных
-bot = Bot(token=TOKEN_sergey_test_bot)  # Инициализация бота
+bot = Bot(token=BOT_TOKEN)  # Инициализация бота
 dp = Dispatcher(bot, storage=storage)  # Диспэтчер
 
 

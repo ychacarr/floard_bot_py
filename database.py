@@ -69,3 +69,24 @@ class Preference(BaseModel):
         )
         primary_key = CompositeKey('game', 'member')
 
+def add_preferences_with_Member(member_in, level_in = 2):
+    """
+    Функция создаёт в таблице предпочтений (Preference) записи с id участника (member_in.id), id игры и уровнем level.
+    В качестве id игры используются поочередно id всех игр, существующих в таблице Game.
+    
+    Предполагаемый сценарий использования: при добавлении в БД нового пользователя ему можно добавить предпочтения ко всем играм.
+    Уровень предпочтения для всех игр в таком случае окажется равным level_in (по умолчанию = 2, т.е. нейтральный)
+    """
+    for i_game in Game:
+        Preference.insert(game= i_game.id, member= member_in.id, level= level_in).execute()
+
+def add_preferences_with_Game(game_in, level_in = 2):
+    """
+    Функция создаёт в таблице предпочтений (Preference) записи с id игры (game_in.id), id участника и уровнем level.
+    В качестве id игры используются поочередно id всех участников, существующих в таблице Member.
+    
+    Предполагаемый сценарий использования: при добавлении в БД новой игры с ней можно добавить предпочтения у всех участников.
+    Уровень предпочтения этой игры для каждого участника таком случае окажется равным level_in (по умолчанию = 2, т.е. нейтральный)
+    """
+    for i_member in Member:
+        Preference.insert(game= game_in.id, member= i_member.id, level= level_in).execute()

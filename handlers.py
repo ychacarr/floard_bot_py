@@ -1,14 +1,6 @@
-from aiogram import Bot, Dispatcher, executor, types
-from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from aiogram import types
 from keyboards_and_buttons import *
 import random
-from config import *
-
-# Инициализация бота и дэспэтчера
-storage = MemoryStorage()  # Хранение данных
-bot = Bot(token=BOT_TOKEN)  # Инициализация бота
-dp = Dispatcher(bot, storage=storage)  # Диспэтчер
-
 
 # сегодняшний вечер клацаем, затем задаём кто есть. затем кто первый, сплит команд, выбор игры
 
@@ -17,6 +9,14 @@ async def command_start(message: types.Message):
     Команда старт
     """
     await message.answer('Выберите шонить', reply_markup=kb_main_menu)
+
+
+async def start_evening(callback: types.CallbackQuery):
+    """
+    Команда старт
+    """
+    await callback.message.answer('Выберите шонить', reply_markup=kb_today_menu)
+
 
 
 async def command_split_team(callback: types.CallbackQuery):
@@ -40,8 +40,9 @@ async def command_split_team_result(callback: types.CallbackQuery):
         await split_teams(4, callback)
     if callback.data == "five_teams":
         await split_teams(5, callback)
-    # else:
-    #     await callback.message.answer('Не хочу вас делить. Что-то не так с количеством')
+
+
+
 
 
 async def command_today_members(callback: types.CallbackQuery):
@@ -56,10 +57,20 @@ async def command_today_members(callback: types.CallbackQuery):
     # print(callback.message.reply_markup)
 
 
+
 async def command_today_members1(callback: types.CallbackQuery):
     print(callback.message.reply_markup)
     print(callback.data)
+    index = 0
+    # for el in callback.message.reply_markup:
+    #     for el1 in el[1]:
+    #         print(el1)
+    #         if el1[0]['callback_data'] == f'{callback.data}':
+    #             print(el.index(el1))
     # kb_with_members
+    # list_of_members = await get_members_from_database()
+    # kb_with_members = await create_inline_keyboard_with_members(list_of_members)
+    #
     # await callback.message.edit_reply_markup(kb_with_members)
 
 
@@ -126,7 +137,7 @@ async def command_delete_game():
 
 
 
-async def get_members_from_database():
+async def get_members_from_database(clicked_member_id=0):
     sg = "Сергей"
     yn = "Ян"
     vl = "Владислав"
@@ -140,12 +151,14 @@ async def get_members_from_database():
     pv = "Полина"
     lm = "Лидия"
     list = [sg, yn, vl, al, il, ap, tm, tu, vs, eu, pv, lm]
+    if list.count(clicked_member_id) !=  0:
+        list.pop(clicked_member_id)
     return list
 
 
 async def create_inline_keyboard_with_members(list_of_members: list):
     kb_with_members = InlineKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-    for k, member in enumerate(list_of_members, start=1):
+    for k, member in enumerate(list_of_members, start=0):
         member_button = InlineKeyboardButton(f'{member}', callback_data=f"{k}_here")
         kb_with_members.add(member_button)
         print(k)
@@ -155,48 +168,37 @@ async def create_inline_keyboard_with_members(list_of_members: list):
 async def split_teams(teams_count, callback):
     list_of_members = await get_members_from_database()
     list_of_lists = []
+    teams_size_without_remainder = len(list_of_members) // teams_count
+    remainder = len(list_of_members) % teams_count
+    print(teams_size_without_remainder)
+
     for member in range(teams_count):
         member = []
         list_of_lists.append(member)
 
+
+    print(list_of_members)
+    i=0
+    while i < teams_count:
+        while len(list_of_lists[i]) < teams_size_without_remainder:
+            list_of_lists[i].append(list_of_members.pop(random.randrange(0, len(list_of_members))))
+            print(f"Цикл {i}")
+        i += 1
+
+
     for member in list_of_members:
-        number_of_team = random.randrange(0, teams_count)
-        list_of_lists[number_of_team].append(member)
+        list_of_lists[random.randrange(0,len(list_of_lists)-1)].append(member)
+
 
     await print_splited_teams(list_of_lists, callback)
 
 
 async def print_splited_teams(list_of_lists_with_members, callback):
     for k, list in enumerate(list_of_lists_with_members, start=1):
-        await callback.message.answer(f'Команда {k}:')
+        string_all_members_of_team = f'Команда {k}: \n'
         for j in list:
-            await callback.message.answer(f'{j}')
-        await callback.message.answer('-------------------------------')
+            string_all_members_of_team = string_all_members_of_team + j + '\n'
+        # await callback.message.answer('-------------------------------')
+        await callback.message.answer(f'{string_all_members_of_team}')
 
 
-
-
-def register_handlers(dp: Dispatcher):
-    dp.register_message_handler(command_start, commands=['start'])
-    dp.register_callback_query_handler(command_split_team, text='split_team')
-    dp.register_callback_query_handler(command_split_team_result, text=['two_teams', 'three_teams', 'four_teams', 'five_teams'])
-    dp.register_callback_query_handler(command_today_members, text='today_members')
-    dp.register_callback_query_handler(command_today_members1, text=['1_here','2_here','3_here','4_here','5_here','6_here','7_here','8_here','9_here','10_here','11_here','12_here',])
-    dp.register_callback_query_handler(command_first_move, text='first_move')
-    dp.register_callback_query_handler(command_choose_game_first_criterium, text='choose_game')
-    dp.register_callback_query_handler(command_choose_game_second_criterium, text=['fast_game', 'meduim_game', 'long_game'])
-    dp.register_callback_query_handler(command_choose_game_result, text=['speechfull_game', 'speechless_game'])
-    dp.register_message_handler(command_birthdays, commands=['birthdays'])
-    dp.register_message_handler(command_congratulation, commands=['congrats'])
-    dp.register_message_handler(command_add_game, commands=['add_game'])
-    dp.register_message_handler(command_add_member, commands=['add_member'])
-    dp.register_message_handler(command_delete_member, commands=['delete_member'])
-    # dp.register_message_handler(command_games, commands=['games'])
-
-    # dp.register_callback_query_handler(cancel_handler, text='отмена')
-
-
-
-if __name__ == '__main__':
-    register_handlers(dp)
-    executor.start_polling(dp, skip_updates=True)

@@ -29,8 +29,7 @@ def parse_url(name):
 
 
 def generate_random_name():
-    random_number = random.randrange(0, 9)
-    generated_name = names[random_number]
+    generated_name = names[random.randrange(0, len(names))]
     return generated_name
 
 

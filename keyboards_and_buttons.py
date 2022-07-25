@@ -26,6 +26,13 @@ button_no_matter_speech_game = InlineKeyboardButton('Не важно', callback_
 kb_speech_level_of_game = InlineKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
 kb_speech_level_of_game.add(button_speechfull_game, button_speechless_game).add(button_no_matter_speech_game)
 
+button_coop_game = InlineKeyboardButton('Кооперативная', callback_data="coop_game")
+button_individual_game = InlineKeyboardButton('Индивидуальная', callback_data="individ_game")
+button_team_vs_team_game = InlineKeyboardButton('Команда на команду', callback_data="tvt_game")
+button_no_matter_type_game = InlineKeyboardButton('Не важно', callback_data="no_matter_type_game")
+kb_type_of_game = InlineKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+kb_type_of_game.add(button_coop_game).add(button_individual_game).add(button_team_vs_team_game).add(button_no_matter_type_game)
+
 
 button_two_teams = InlineKeyboardButton('2', callback_data="two_teams")
 button_three_teams = InlineKeyboardButton('3', callback_data="three_teams")

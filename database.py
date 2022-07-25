@@ -1,3 +1,6 @@
+from ast import List
+from re import T
+from telnetlib import GA
 from peewee import *
 
 DBFile = SqliteDatabase('./floardbase.db')
@@ -37,6 +40,9 @@ class Game(BaseModel):
     def action_type_name(self):
         return ActionType.get_by_id(self.action_type).name
 
+    def __str__(self):
+        return f'{self.name}'
+
     class Meta:
         table_name = 'Game'
 
@@ -58,16 +64,16 @@ class Member(BaseModel):
         table_name = 'Member'
 
 class Preference(BaseModel):
-    game = ForeignKeyField(column_name='GameID', field='id', model=Game, null=True)
+    game_id = ForeignKeyField(column_name='GameID', field='id', model=Game, null=True)
     level = IntegerField(column_name='Level', default=2)
-    member = ForeignKeyField(column_name='MemberID', field='id', model=Member, null=True)
+    member_id = ForeignKeyField(column_name='MemberID', field='id', model=Member, null=True)
 
     class Meta:
         table_name = 'Preference'
         indexes = (
-            (('member', 'game'), True),
+            (('member_id', 'game_id'), True),
         )
-        primary_key = CompositeKey('game', 'member')
+        primary_key = CompositeKey('game_id', 'member_id')
 
 def add_preferences_with_Member(member_in, level_in = 2):
     """
@@ -90,3 +96,39 @@ def add_preferences_with_Game(game_in, level_in = 2):
     """
     for i_member in Member:
         Preference.insert(game= game_in.id, member= i_member.id, level= level_in).execute()
+
+def choose_a_game(members:list[Member], srch_dur:int = None, srch_action:int = None, srch_convers:bool = None)->list[list[Game]]:
+    """
+    Функция находит игры, подходящие заданным критериям и участникам.
+
+    Возвращает список списков, где:
+        первый элемент содержит список игр, которые удовлетворяют всем критериям (будет пуст, если таких нет);
+        
+        второй элемент пока является пустым списком (нужен для последующих фич (актуально на 25.07)).
+    """
+    members_ids = []
+    members_count = len(members)
+    for member in members:
+        members_ids.append(member.id)
+    members_ids_str = ', '.join(map(str, members_ids))
+
+    sql_str = f'SELECT DISTINCT Game.*\
+                FROM (Preference JOIN Game on Preference.GameID = Game.ID) AS X\
+                WHERE (X.MinAmount <= {members_count} AND X.MaxAmount >= {members_count})'
+    if (srch_dur != None):
+        sql_str += f' AND X.Duration = {srch_dur}'
+    if (srch_action != None):
+        sql_str += f' AND X.ActionType = {srch_action}'
+    if (srch_convers != None):
+        sql_str += f' AND X.IsConvers = {srch_convers}'
+    sql_str += f' AND NOT EXISTS(\
+                        SELECT *\
+                        FROM Preference AS Y\
+                        WHERE X.ID = Y.GameID AND Y.MemberID in ({members_ids_str}) AND Level = 0\
+                    )'
+
+    query_prefered = Game.raw(sql=sql_str)
+    query_not_prefered = []
+    result = [query_prefered, query_not_prefered]
+
+    return result

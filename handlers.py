@@ -155,15 +155,18 @@ async def command_choose_game_result(callback: types.CallbackQuery):
     if callback.data == 'no_matter_type_game':
         game_teaming_criterium = None
 
-    # game_duration_criterium (1,2,3,None)
-    # game_speech_criterium (True, False, None)
-    # game_teaming_criterium (1,2,3,None)
-    # today_members - список всех сегодняшних участников
-    # len(today_members) - количество участников
-
     result = choose_a_game(today_members, game_duration_criterium, game_teaming_criterium, game_speech_criterium)
-    await callback.message.answer('На основе введённых данных я выбрал следующие игры:' + '\n'+
-                                  f'{result[0]}')
+    result_games_string = ''
+    for game in result[0]:
+        print(game)
+        result_games_string += game.name
+        result_games_string += '\n'
+
+    if len(result_games_string) != 0:
+        await callback.message.answer('На основе введённых данных я выбрал следующие игры:' + '\n' +
+                            f'{result_games_string}')
+    else:
+        await callback.message.answer('Таких игр для вас не найдено')
 
 
 

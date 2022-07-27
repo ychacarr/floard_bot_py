@@ -120,7 +120,7 @@ def choose_a_game(members:list[Member], srch_dur:int = None, srch_action:int = N
     if (srch_action != None):
         sql_str += f' AND X.ActionType = {srch_action}'
     if (srch_convers != None):
-        sql_str += f' AND X.IsConvers = {srch_convers}'
+        sql_str += f' AND X.IsConvers = {int(srch_convers)}'
     sql_str += f' AND NOT EXISTS(\
                         SELECT *\
                         FROM Preference AS Y\

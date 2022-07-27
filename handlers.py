@@ -5,8 +5,6 @@ from database import *
 import copy
 
 
-global today_members
-today_members = []
 
 # сегодняшний вечер клацаем, затем задаём кто есть. затем кто первый, сплит команд, выбор игры
 
@@ -15,7 +13,8 @@ async def command_start(message: types.Message):
     Команда старт
     """
     await message.answer('Выберите шонить', reply_markup=kb_main_menu)
-
+    global today_members
+    today_members = []
 
 
 async def command_today_members(callback: types.CallbackQuery):
@@ -162,8 +161,9 @@ async def command_choose_game_result(callback: types.CallbackQuery):
     # today_members - список всех сегодняшних участников
     # len(today_members) - количество участников
 
-
-    await callback.message.answer('Результат игры: игра')
+    result = choose_a_game(today_members, game_duration_criterium, game_teaming_criterium, game_speech_criterium)
+    await callback.message.answer('На основе введённых данных я выбрал следующие игры:' + '\n'+
+                                  f'{result[0]}')
 
 
 

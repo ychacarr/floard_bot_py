@@ -31,6 +31,6 @@ def register_handlers(dp: Dispatcher):
     dp.register_message_handler(command_add_game, commands=['add_game'])
     dp.register_message_handler(command_add_member, commands=['add_member'])
     dp.register_message_handler(command_delete_member, commands=['delete_member'])
-    dp.register_message_handler(speech_recogn, content_types=types.ContentType.VOICE)
+    # dp.register_message_handler(speech_recogn, content_types=types.ContentType.VOICE)
 
 

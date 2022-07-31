@@ -6,7 +6,7 @@ from pathlib import Path
 from os import path
 from handlers import bot
 from pydub import AudioSegment
-
+import ffmpeg
 import soundfile
 import subprocess, os
 

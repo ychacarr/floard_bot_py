@@ -1,4 +1,3 @@
-import random
 import time
 from bs4 import BeautifulSoup as BS
 from selenium import webdriver

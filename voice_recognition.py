@@ -1,3 +1,4 @@
+import pydub
 import speech_recognition as sr
 from aiogram import types
 from aiogram.types import  File
@@ -5,8 +6,10 @@ from pathlib import Path
 from os import path
 from handlers import bot
 from pydub import AudioSegment
+
 import soundfile
 import subprocess, os
+
 
 
 class FFmpeg:
@@ -36,19 +39,21 @@ async def handle_file(file: File, file_name: str, path: str):
 
 
 async def speech_recogn(msg: types.Message):
+    pydub.AudioSegment.ffmpeg = "D:\\Library\\Projects PyCharm\\floard_bot_py\\ffmpeg\\fftools"
+
     # file = await bot.get_file(msg.voice.file_id)
     # file_path = file.file_path
     # await bot.download_file(file_path, 'sound.ogg')
     # # AUDIO_FILE = "123.wav"
-    # # sound = AudioSegment.from_mp3('123.mp3')
-    # # sound.export('123.wav', format='wav')
+    sound = AudioSegment.from_ogg(r'sound.ogg')
+    sound.export(r'sound.wav', format='wav')
     # data, samplerate = soundfile.read('sound.ogg')
     # soundfile.write('1234.wav', data, samplerate, subtype='PCM_16')
-    file = FFmpeg("D:\\Library\\Projects PyCharm\\floard_bot_py", 2)
-    sample = sr.AudioFile('sound.wav')
-
-    r = sr.Recognizer()
-    with sample as source:
-        audio = r.record(source)
-    recognized_text = r.recognize_google(audio, language='ru-RU')
-    print(recognized_text)
+    # file = FFmpeg("D:\\Library\\Projects PyCharm\\floard_bot_py", 2)
+    # sample = sr.AudioFile('sound.wav')
+    #
+    # r = sr.Recognizer()
+    # with sample as source:
+    #     audio = r.record(source)
+    # recognized_text = r.recognize_google(audio, language='ru-RU')
+    # print(recognized_text)

@@ -39,6 +39,7 @@ def replace_8_march_text(first_remarks):
     elif "восьмое марта" in first_remarks:
         text = first_remarks.replace("восьмое марта", 'празднество')
         return text
+    return first_remarks
 
 
 def generate_congrats(name):

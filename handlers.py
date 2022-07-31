@@ -1,8 +1,15 @@
-from aiogram import types
+from aiogram import types, Bot
 from keyboards_and_buttons import *
 import random
 from database import *
 import copy
+from config import *
+from congratulations import generate_congrats
+from preferences import authorisation
+
+
+bot = Bot(token=BOT_TOKEN)  # Инициализация бота
+
 
 
 
@@ -194,8 +201,14 @@ async def command_birthdays():
     pass
 
 
-async def command_congratulation():
-    pass
+async def command_congratulation(callback: types.CallbackQuery):
+    # await callback.answer('')
+    this_member = await authorisation(callback)
+
+    grats = generate_congrats(this_member.name)
+    await callback.message.edit_text(f'{grats}')
+    await callback.message.answer('Выберите шонить', reply_markup=kb_main_menu)
+
 
 
 async def command_add_member():

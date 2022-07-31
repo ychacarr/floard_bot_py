@@ -1,10 +1,12 @@
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+# from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-button_today_members = InlineKeyboardButton('Ввести присутствующих', callback_data="today_members")
+button_today_members = InlineKeyboardButton('Ввести присутствующих (начать вечер)', callback_data="today_members")
 button_individual_pref = InlineKeyboardButton('Задать предпочтения по играм', callback_data="individual_preferences")
+button_create_grats = InlineKeyboardButton('Рандомное поздравление от нейросети', callback_data="congrats")
+button_end_evening = InlineKeyboardButton('Закончить', callback_data="end_evening")
 kb_main_menu = InlineKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-kb_main_menu.add(button_today_members).add(button_individual_pref)
+kb_main_menu.add(button_today_members).add(button_individual_pref).add(button_create_grats).add(button_end_evening)
 
 
 button_split_team = InlineKeyboardButton('Разбиться на команды', callback_data="split_team")
@@ -33,7 +35,8 @@ button_individual_game = InlineKeyboardButton('Индивидуальная', ca
 button_team_vs_team_game = InlineKeyboardButton('Команда на команду', callback_data="tvt_game")
 button_no_matter_type_game = InlineKeyboardButton('Не важно', callback_data="no_matter_type_game")
 kb_type_of_game = InlineKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-kb_type_of_game.add(button_coop_game).add(button_individual_game).add(button_team_vs_team_game).add(button_no_matter_type_game)
+kb_type_of_game.add(button_coop_game).add(button_individual_game).add(button_team_vs_team_game)\
+    .add(button_no_matter_type_game)
 
 
 button_two_teams = InlineKeyboardButton('2', callback_data="two_teams")

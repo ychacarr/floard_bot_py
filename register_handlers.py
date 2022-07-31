@@ -1,6 +1,7 @@
 from handlers import *
 from aiogram import Dispatcher
 from preferences import *
+from voice_recognition import *
 
 
 def register_handlers(dp: Dispatcher):
@@ -26,9 +27,10 @@ def register_handlers(dp: Dispatcher):
     dp.register_callback_query_handler(second_individual_preferences, text=['0_pref', '1_pref', '2_pref', '3_pref', 'its_me'])
 
     dp.register_message_handler(command_birthdays, commands=['birthdays'])
-    dp.register_message_handler(command_congratulation, commands=['congrats'])
+    dp.register_callback_query_handler(command_congratulation, text=['congrats'])
     dp.register_message_handler(command_add_game, commands=['add_game'])
     dp.register_message_handler(command_add_member, commands=['add_member'])
     dp.register_message_handler(command_delete_member, commands=['delete_member'])
+    dp.register_message_handler(speech_recogn, content_types=types.ContentType.VOICE)
 
 

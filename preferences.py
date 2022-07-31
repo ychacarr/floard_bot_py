@@ -56,12 +56,6 @@ async def second_individual_preferences(callback: types.CallbackQuery):
         await callback.message.edit_text('Всё готово, спасибо за ответы!', reply_markup=kb_preferences_okey)
 
 
-async def third_individual_preferences(callback: types.CallbackQuery):
-    await callback.answer('')
-
-    # await callback.message.edit_text('Перейдите в главное меню, чтобы попробовать другие функции',
-    #                               reply_markup=kb_menu_start)
-
 
 async def update_preference_database(list_of_values):
     for list in list_of_values:

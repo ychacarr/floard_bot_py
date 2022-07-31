@@ -9,7 +9,7 @@ options.add_argument("user-agent= Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
 
 def parse_url(name):
     url = "https://yandex.ru/lab/postcard?name=" + name
-    driver = webdriver.Chrome(executable_path="D:\\Library\\Projects PyCharm\\parse mail.ru\\chromedriver.exe",
+    driver = webdriver.Chrome(executable_path="chromedriver.exe",
                               options=options)
     driver.get(url=url)
     time.sleep(0.1)

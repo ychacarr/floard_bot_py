@@ -401,7 +401,10 @@ class AsyncScheduler:
                     with open(backup_filename, 'r', encoding='utf-8') as backup:
                         for line in backup:
                             temp_job = Job.unpack_from_str(line)
-                            self.add_job(temp_job)
+                            try:
+                                self.add_job(temp_job)
+                            except ValueError:
+                                pass
                 except FileNotFoundError:
                     pass
             else:

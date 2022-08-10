@@ -116,7 +116,9 @@ class Job:
             func = getattr(sys.modules[data[2]], data[1])
             kwargs = None
             if (data[3] != 'None'):
-                kwargs = ast.literal_eval(data[3])            
+                kwargs = ast.literal_eval(data[3])
+            if (data[6].endswith('\n')):
+                data[6] = data[6].removesuffix('\n')
             return Job(data[0], func, kwargs, data[4], int(data[5]), data[6])
         else:
             raise ValueError('async_scheduler.Job.unpack_from_str error. Unknown data format.')

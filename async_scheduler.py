@@ -9,7 +9,7 @@ import sys
 
 # ToDo:
 #       1. Список неименованных параметров (args) в конструкторе Job.
-#       
+#       4. Использовать Pickle для параметров функций
 # Done:
 #       2. Переместить куда-нибудь check_year.
 #       3. Механизм прерывания сна, в случае добавления новой работы.
@@ -52,8 +52,12 @@ class Job:
 
         Для создания периодической работы с периодом выполнения каждый год (начиная с 10.08.22 10:00) с функцией f без параметров необходимо 
         вызвать следующий конструктор:\n
-        Job('third_job', f, period_name= Periods.year, period_amount= 1, str_datetime= '10.08.22 10:00')
+        Job('third_job', f, period_name= Periods.year, period_amount= 1, str_datetime= '10.08.22 10:00')\n
 
+        В объекте работы есть свойство need_backup, которое определяет нужно ли записывать эту работу в backup файл AsyncSchedule. Если задача создаётся
+        динамически (т.е. при возникновении некоторого события, которое определяется только во время работы программы), то это свойство следует задать как True 
+        (установлено по умолчанию), в противном случае (если работа создаётся и заносится в расписание каждый раз при старте программы) следует пометить работу 
+        как незаписываемую в backup файл.
     Объект класса Job не отслеживает текущее время и не выполняется сам по себе! Для добавления работы в очередь выполнения используйте класс AsyncScheduler.
     """
 
@@ -62,7 +66,8 @@ class Job:
                 kwargs:Dict[str, Any] = None,
                 period_name:str = None, 
                 period_amount:int = 0,
-                str_datetime:str|None = None):
+                str_datetime:str|None = None,
+                need_backup: bool = True):
         """
         Создаёт новый объект Job.
 
@@ -71,7 +76,8 @@ class Job:
         kwargs -- словарь, содержащий наименования и значения параметров с которыми будет вызвана функция func;\n
         period_name -- строка из множества: 'once', 'minute', 'hour', 'day', 'week', 'month', 'year';\n
         period_amount -- целое число >= 0. Значение 0 допустимо только в сочетании с периодом 'once'!;\n
-        str_datetime -- строка в формате 'дд.мм.гг ЧЧ:ММ'. В случае несовпадения формата выбрасывается исключение.
+        str_datetime -- строка в формате 'дд.мм.гг ЧЧ:ММ'. В случае несовпадения формата выбрасывается исключение;
+        need_backup -- bool определяющий необходимость заносить работу в backup файл.
 
         Если строка str_datetime = None, в качестве времени указывается datetime.now() (т.е. текущие дата и время).\n
         Если переданная функция func не является async функцией, выбрасывается исключение.
@@ -84,6 +90,7 @@ class Job:
         self._period_amount = 0
         self.period_amount_set(period_amount)
         self.period_name_set(period_name)
+        self._need_backup = need_backup
 
         if (str_datetime == None):
             str_datetime = datetime.datetime.now().strftime('%d.%m.%y %H:%M')
@@ -224,6 +231,10 @@ class Job:
         """
         self._datetime = datetime.datetime.strptime(datetime_str, '%d.%m.%y %H:%M')
     
+    @property
+    def need_backup(self) -> bool:
+        return self._need_backup
+
     @property
     def name(self)->str:
         """
@@ -419,10 +430,11 @@ class AsyncScheduler:
         if (self._backup_file != None):
             if (len(self._jobs) > 0):
                 log.info(f'Writing backup file as {self._backup_file}')
-                with open(self._backup_file, 'w') as backup:
+                with open(self._backup_file, 'w', encoding='utf-8') as backup:
                     for job in self._jobs:
-                        backup.write(job.pack_to_str())
-                        backup.write('\n')
+                        if (job.need_backup):
+                            backup.write(job.pack_to_str())
+                            backup.write('\n')
         else:
             raise ValueError('async_scheduler.AsyncScheduler._do_backup error. Missing backup filename. self._backup_file = None.')
 

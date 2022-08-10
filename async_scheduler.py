@@ -89,11 +89,11 @@ class Job:
             str_datetime = datetime.datetime.now().strftime('%d.%m.%y %H:%M')
         self._datetime = datetime.datetime.strptime(str_datetime, '%d.%m.%y %H:%M')
 
-        # if ((datetime.datetime.now().replace(second=0, microsecond=0)) > self._datetime):
-        #     if (self._period_name != 'once'):
-        #         self.next_datetime()
-        #     else:
-        #         raise ValueError('async_scheduler.Job() error. str_datetime should be in future.')
+        if ((datetime.datetime.now().replace(second=0, microsecond=0)) > self._datetime):
+            if (self._period_name != 'once'):
+                self.next_datetime()
+            else:
+                raise ValueError('async_scheduler.Job() error. str_datetime should be in future.')
 
     def _check_year(in_year):
         """

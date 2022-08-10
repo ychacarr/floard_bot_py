@@ -233,6 +233,9 @@ class Job:
     
     @property
     def need_backup(self) -> bool:
+        """
+        Возвращает bool - нужно ли записывать данную работу в файл backup
+        """
         return self._need_backup
 
     @property

@@ -395,10 +395,13 @@ class AsyncScheduler:
         if (backup_flag):
             if (backup_filename != None):
                 self._backup_file = backup_filename
-                with open(backup_filename, 'r', encoding='utf-8') as backup:
-                    for line in backup:
-                        temp_job = Job.unpack_from_str(line)
-                        self.add_job(temp_job)
+                try:
+                    with open(backup_filename, 'r', encoding='utf-8') as backup:
+                        for line in backup:
+                            temp_job = Job.unpack_from_str(line)
+                            self.add_job(temp_job)
+                except FileNotFoundError:
+                    pass
             else:
                 raise ValueError('async_scheduler.AsyncScheduler.__init__ error. backup_filename can\'t be None when backup_flag = True.')
 
@@ -409,10 +412,12 @@ class AsyncScheduler:
         Файл для записи задается при создании объекта. Если файл не был задан, .do_backup() выбросит ValueError.
         """
         if (self._backup_file != None):
-            with open(self._backup_file, 'w') as backup:
-                for job in self._jobs:
-                    backup.write(job.pack_to_str())
-                    backup.write('\n')
+            if (len(self._jobs) > 0):
+                log.info(f'Writing backup file as {self._backup_file}')
+                with open(self._backup_file, 'w') as backup:
+                    for job in self._jobs:
+                        backup.write(job.pack_to_str())
+                        backup.write('\n')
         else:
             raise ValueError('async_scheduler.AsyncScheduler._do_backup error. Missing backup filename. self._backup_file = None.')
 

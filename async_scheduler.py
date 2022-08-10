@@ -222,7 +222,7 @@ class Job:
 
         datetime_str -- строка в формате 'дд.мм.гг ЧЧ:ММ'. В случае несовпадения формата выбрасывается исключение.
         """
-        self._datetime = datetime.datetime.strptime(datetime_str, '%d%m%y %H:%M')
+        self._datetime = datetime.datetime.strptime(datetime_str, '%d.%m.%y %H:%M')
     
     @property
     def name(self)->str:

@@ -7,7 +7,7 @@ import re
 
 async def make_individual_preferences(callback: types.CallbackQuery):
     await callback.answer('')
-    await callback.message.answer('Вы увидите название игры. '
+    await callback.message.edit_text('Вы увидите название игры. '
                                   'Вам необходимо в чат написать ваше отношение к ней от 0 до 3, где:' + '\n' + '\n' +
                                   '0 - вообще никогда не буду играть (как монополия для Сани) ' + '\n' +
                                   '1 - могу поиграть, но лучше во что-то другое' + '\n' +
@@ -24,11 +24,11 @@ async def first_individual_preferences(callback: types.CallbackQuery):
     global this_member
     this_member = await authorisation(callback)
     if this_member != None:
-        await callback.message.answer(f'Вы идентифицированы как' + '\n' +
+        await callback.message.edit_text(f'Вы идентифицированы как' + '\n' +
                                       f'{this_member.full_name}',
                                       reply_markup=kb_preferences_ok)
     else:
-        await callback.message.answer('Нет вашего Telegram_ID в базе данных')
+        await callback.message.edit_text('Нет вашего Telegram_ID в базе данных')
 
 
 async def second_individual_preferences(callback: types.CallbackQuery):
@@ -43,7 +43,7 @@ async def second_individual_preferences(callback: types.CallbackQuery):
 
     if len(games_list) != 0:
         current_game = games_list.pop(0)
-        await callback.message.answer(f'Игра {current_game.name} \nОцените от 0 до 3',
+        await callback.message.edit_text(f'Игра {current_game.name} \nОцените от 0 до 3',
                                       reply_markup=kb_preferences_values)
         list_with_choise = [this_member.id, current_game.id]
         list_of_lists.append(list_with_choise)
@@ -52,14 +52,15 @@ async def second_individual_preferences(callback: types.CallbackQuery):
             if (len(list_of_lists[i]) < 3) & (len(list_of_lists[i]) > 1):
                 x = (re.findall('(\\d+)', callback.data))
                 list_of_lists[i].append(int(x[0]))
-        await callback.message.answer('Всё готово, спасибо за ответы!', reply_markup=kb_preferences_okey)
+        await update_preference_database(list_of_lists)
+        await callback.message.edit_text('Всё готово, спасибо за ответы!', reply_markup=kb_preferences_okey)
 
 
 async def third_individual_preferences(callback: types.CallbackQuery):
-    await callback.answer('', )
-    await update_preference_database(list_of_lists)
-    await callback.message.answer('Перейдите в главное меню, чтобы попробовать другие функции',
-                                  reply_markup=kb_menu_start)
+    await callback.answer('')
+
+    # await callback.message.edit_text('Перейдите в главное меню, чтобы попробовать другие функции',
+    #                               reply_markup=kb_menu_start)
 
 
 async def update_preference_database(list_of_values):

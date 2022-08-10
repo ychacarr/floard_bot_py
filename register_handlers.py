@@ -8,7 +8,8 @@ def register_handlers(dp: Dispatcher):
     dp.register_callback_query_handler(command_split_team, text='split_team')
     dp.register_callback_query_handler(command_split_team_result, text=['two_teams', 'three_teams', 'four_teams',
                                                                         'five_teams'])
-    dp.register_callback_query_handler(start_evening, text='exit_member_chose')
+    dp.register_callback_query_handler(start_evening, text=['exit_member_chose', 'backtomenu'])
+    dp.register_callback_query_handler(end_evening, text='end_evening')
     dp.register_callback_query_handler(command_today_members, text='today_members')
     dp.register_callback_query_handler(today_members_edit_kb,
                                        text=['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'])
@@ -23,7 +24,6 @@ def register_handlers(dp: Dispatcher):
     dp.register_callback_query_handler(make_individual_preferences, text='individual_preferences')
     dp.register_callback_query_handler(first_individual_preferences, text='ready')
     dp.register_callback_query_handler(second_individual_preferences, text=['0_pref', '1_pref', '2_pref', '3_pref', 'its_me'])
-    dp.register_callback_query_handler(third_individual_preferences, text=['oki'])
 
     dp.register_message_handler(command_birthdays, commands=['birthdays'])
     dp.register_message_handler(command_congratulation, commands=['congrats'])

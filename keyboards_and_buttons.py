@@ -10,8 +10,9 @@ kb_main_menu.add(button_today_members).add(button_individual_pref)
 button_split_team = InlineKeyboardButton('Разбиться на команды', callback_data="split_team")
 button_first_move = InlineKeyboardButton('Кто первый ходит?', callback_data="first_move")
 button_choose_game = InlineKeyboardButton('Выбрать игру', callback_data="choose_game")
+button_end_evening = InlineKeyboardButton('Закончить вечер', callback_data="end_evening")
 kb_today_menu = InlineKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-kb_today_menu.add(button_split_team).add(button_first_move).add(button_choose_game)
+kb_today_menu.add(button_split_team).add(button_first_move).add(button_choose_game).add(button_end_evening)
 
 
 button_fast_game = InlineKeyboardButton('Быстрая', callback_data="fast_game")
@@ -58,10 +59,6 @@ kb_preferences_values = InlineKeyboardMarkup(resize_keyboard=True, one_time_keyb
 kb_preferences_values.add(button_preferences_value_0, button_preferences_value_1,
                           button_preferences_value_2, button_preferences_value_3)
 
-button_preferences_okey = InlineKeyboardButton('ok', callback_data="oki")
+button_preferences_okey = InlineKeyboardButton('Вернуться в меню', callback_data="backtomenu")
 kb_preferences_okey = InlineKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
 kb_preferences_okey.add(button_preferences_okey)
-
-button_start = KeyboardButton('/start')
-kb_menu_start = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-kb_menu_start.add(button_start)

@@ -2,7 +2,7 @@ import asyncio
 from register_handlers import register_handlers
 from aiogram import Bot, Dispatcher, executor
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
-from config import *
+from data.config import *
 import logging
 from async_scheduler import AsyncScheduler
 from congratulations import prepare_congratulation_jobs

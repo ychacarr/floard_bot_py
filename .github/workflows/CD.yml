@@ -18,7 +18,7 @@ jobs:
       - name: Login to DockerHub
         run : echo ${{ secrets.DOCKERHUB_PWD }} | docker login -u ${{ secrets.DOCKERHUB_LOGIN }} --password-stdin
       - name: Build new image
-        run : docker build -t floardbot -f Dockerfile .
+        run : docker build -t $DOCKER_LOGIN/floardbot:latest -f Dockerfile .
       - name: Push image to DockerHub
         run : docker push $DOCKER_LOGIN/floardbot:latest
       - name: Logout from DockerHub

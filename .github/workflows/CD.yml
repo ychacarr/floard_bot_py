@@ -17,6 +17,6 @@ jobs:
       - name: Build new image
         run : docker build -t floardbot -f Dockerfile .
       - name: Push image to DockerHub
-        run : docker push floardbot
+        run : docker push ${{ secrets.DOCKERHUB_LOGIN }}/floardbot
       - name: Logout from DockerHub
         run : docker logout

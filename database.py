@@ -3,7 +3,7 @@ from re import T
 from telnetlib import GA
 from peewee import *
 
-DBFile = SqliteDatabase('./floardbase.db')
+DBFile = SqliteDatabase('./data/floardbase.db')
 
 class BaseModel(Model):
     class Meta:

@@ -1,5 +1,8 @@
 name: main-CD
 
+env:
+  DOCKER_LOGIN: ${{ secrets.DOCKERHUB_LOGIN }}
+
 on:
   push:
     branches: [ "main" ]
@@ -17,6 +20,6 @@ jobs:
       - name: Build new image
         run : docker build -t floardbot -f Dockerfile .
       - name: Push image to DockerHub
-        run : docker push ${{ secrets.DOCKERHUB_LOGIN }}/floardbot
+        run : docker push $DOCKER_LOGIN/floardbot:latest
       - name: Logout from DockerHub
         run : docker logout

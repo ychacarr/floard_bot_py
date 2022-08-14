@@ -23,3 +23,10 @@ jobs:
         run : docker push $DOCKER_LOGIN/floardbot:latest
       - name: Logout from DockerHub
         run : docker logout
+  deploy:
+    needs   : build_image
+    runs-on : ubuntu-latest
+    steps   :
+      - name  : Send webhook for deploy
+        run   : "curl --silent --show-error --fail -X POST ${{ secrets.DEPLOYMENT_SERVER }} -H 'Authorization: ${{ secrets.API_KEY }}' -H 'Content-Type: application/json' -d '{\"owner\": \"${{ secrets.DOCKERHUB_LOGIN }}\", \"repo_name\": \"${{ secrets.DOCKERHUB_REPO }}\"'"
+    

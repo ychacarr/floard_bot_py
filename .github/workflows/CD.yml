@@ -13,6 +13,6 @@ jobs:
     steps:
       - uses: actions/checkout@main
       - name: Login to DockerHub
-        run: echo testing | docker login -u ${{ secrets.DOCKER_LOGIN }} --password-stdin
-      - name: Build new image
-        run: docker build -t floardbot -f Dockerfile .
+        run: echo testing
+      #- name: Build new image
+      #  run: docker build -t floardbot -f Dockerfile .

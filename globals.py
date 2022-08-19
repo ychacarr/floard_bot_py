@@ -8,5 +8,5 @@ from async_scheduler import AsyncScheduler
 storage = MemoryStorage()  # Хранение данных
 bot = Bot(token=BOT_TOKEN)  # Инициализация бота
 dp = Dispatcher(bot, storage=storage)  # Диспэтчер
-scheduler = AsyncScheduler([], True, 'scheduler_backup.backup') # Планировщик задач
+scheduler = AsyncScheduler([], True, './data/scheduler_backup.backup') # Планировщик задач
 logging.basicConfig(level=logging.INFO)

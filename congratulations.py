@@ -9,14 +9,16 @@ from random import randint
 log = logging.getLogger('congratulations_module')
 
 async def congrats_from_yandex(name: str) -> str:
+    # Текст поздравления слишком сильно завязан на 8 марта и в целом на поздравлении лица женского рода. "Чистить" текст от 8 марта слишком запаристо.
+    # Поэтому эта функция не используется в коде, возможно в будущем её можно будет приспособить для генерации поздравления с 8 марта.
     exclude_words = {'весенний': '', 
                     'Весенний': '',
-                    '8 марта': 'день рождения',
-                    '8 Марта': 'день рождения',
+                    '8 марта': 'праздник',
+                    '8 Марта': 'праздник',
                     'C 8 марта': 'С днём рождения',
                     'С международным женским днем': 'С днем рождения',
                     'Международный женский день': 'день рождения',
-                    'восьмое марта': 'день рождения'}
+                    'восьмое марта': 'празднество'}
     url = 'https://yandex.ru/lab/api/postcard?name=' + name
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as resp:
@@ -29,6 +31,11 @@ async def congrats_from_yandex(name: str) -> str:
 
 
 async def congrats_from_porfirii(name: str) -> str:
+    """
+    Функция обращается к API сайта https://porfirevich.ru для генерации текста поздравления.
+
+    name -- имя именинника\n
+    """
     session_header = {  'Connection': 'keep-alive', 
                         'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36',
                         'Content-Type': 'text/plain;charset=UTF-8',
@@ -54,6 +61,12 @@ async def congrats_from_porfirii(name: str) -> str:
                 raise Exception('Response status != 200. Can\'t generate congratulations!')
 
 async def create_congrats(member_name: str) -> str:
+    """
+    Генерация текста поздравления с днем рождения. 
+    
+    member_name -- имя именниника\n
+    Поздравление генерируется в любом случае, даже если сервер нейросети выдал ошибку.
+    """
     congrats = f'{member_name}' + '! Поздравляю тебя с днём рождения! Желаю, как и всегда, здоровья, счастья и ... мои нейронные облака сломались. Поэтому просто всего!'
     try:
         congrats = await congrats_from_porfirii(member_name)
@@ -63,12 +76,22 @@ async def create_congrats(member_name: str) -> str:
         return congrats
 
 async def write_congrats(member_id: int):
+    """
+    Функция отправки поздравления в личный чат участника (Member из БД)
+
+    member_id -- id участника, для которого будет сгенерировано и отправлено поздравление
+    """
     member = Member.get_by_id(member_id)
     congrats = await create_congrats(member.name)
     await dp.bot.send_message(member.telegram_id, congrats)
 
 
 def prepare_congratulation_jobs() -> None:
+    """
+    Функция готовит и заносит в планировщик задачи поздравления всех участников (Member из БД) в дни рождения.
+
+    Поздравление отправляется в 12:00, в личный чат именинника.
+    """
     for member in Member:
         year = datetime.now().year
         birtday = (datetime.strptime(member.birth_date, '%d-%m-%Y').replace(year= year, hour=12, minute=0)).strftime('%d.%m.%y %H:%M')

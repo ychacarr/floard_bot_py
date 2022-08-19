@@ -46,11 +46,11 @@ from globals import dp, scheduler
 from datetime import datetime
 
 async def create_congrats(member_fullname: str) -> str:
-    return f'С днём родждения {member_fullname}!'
+    return f'С днём родждения, {member_fullname}!'
 
 async def write_congrats(member_id: int):
     member = Member.get_by_id(member_id)
-    congrats = create_congrats(member.full_name)
+    congrats = await create_congrats(member.full_name)
     await dp.bot.send_message(member.telegram_id, congrats)
 
 

@@ -134,8 +134,7 @@ class Job:
         """
         Пакует объект Job в строку. Используется для записи объекта в файл.
         """
-        str_datetime = self._datetime.strftime('%d.%m.%y %H:%M')
-        return f'{self._name}|{self._func.__name__}|{self._func.__module__}|{self._func_kwargs}|{self._period_name}|{self._period_amount}|{str_datetime}'
+        return f'{self._name}|{self._func.__name__}|{self._func.__module__}|{self._func_kwargs}|{self._period_name}|{self._period_amount}|{self.job_datetime_str}'
     
     def __repr__(self) -> str:
         """
@@ -144,7 +143,7 @@ class Job:
         Формирует строку вида:\n
             'Job наименование_работы|дата_и_время'
         """
-        return f'Job {self._name}|{self._datetime}'
+        return f'Job {self._name}|{self._period_name}|{self._period_amount}|{self.job_datetime_str}'
 
     def next_datetime(self)->bool:
         """
@@ -222,6 +221,10 @@ class Job:
         Возвращает время и дату работы.
         """
         return copy.deepcopy(self._datetime)
+    
+    @property
+    def job_datetime_str(self, d_format: str = '%d.%m.%y %H:%M') -> str:
+        return self._datetime.strftime(d_format)
 
     def job_datetime_set(self, datetime_str:str):
         """
@@ -440,6 +443,13 @@ class AsyncScheduler:
                             backup.write('\n')
         else:
             raise ValueError('async_scheduler.AsyncScheduler._do_backup error. Missing backup filename. self._backup_file = None.')
+
+    @property
+    def is_running(self) -> bool:
+        """
+        Возвращает статус планировщика - запущен или нет.
+        """
+        return self._loop_task != None
 
     async def run(self):
         """

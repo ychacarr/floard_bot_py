@@ -40,16 +40,22 @@
 #     return congratulation
 
 from typing import List
-from async_scheduler import AsyncScheduler, Job, Periods
+from async_scheduler import Job, Periods
+from database import Member
+from globals import dp, scheduler
+from datetime import datetime
 
+async def create_congrats(member_fullname: str) -> str:
+    return f'С днём родждения {member_fullname}!'
 
 async def write_congrats(member_id: int):
-    pass
+    member = Member.get_by_id(member_id)
+    congrats = create_congrats(member.full_name)
+    await dp.bot.send_message(member.telegram_id, congrats)
 
-def prepare_congratulation_jobs() -> List[Job]:
-    # job_list = []
-    # for member in database.Member:
-    #     year = datetime.datetime.now().year
-    #     birtday = (datetime.datetime.strptime(member.birth_date, '%d-%m-%Y').replace(year= year, hour=12, minute=0)).strftime('%d.%m.%y %H:%M')
-    #     job_list.append(Job(f'{member.full_name}_birthday', write_congrats, {'member_id': member.id}, Periods.year, 1, birtday, False))
-    return []
+
+def prepare_congratulation_jobs() -> None:
+    for member in Member:
+        year = datetime.now().year
+        birtday = (datetime.strptime(member.birth_date, '%d-%m-%Y').replace(year= year, hour=12, minute=0)).strftime('%d.%m.%y %H:%M')
+        scheduler.add_job(Job(f'{member.full_name}_birthday', write_congrats, {'member_id': member.id}, Periods.year, 1, birtday, False))

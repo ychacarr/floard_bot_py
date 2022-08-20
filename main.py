@@ -2,7 +2,6 @@ import asyncio
 from register_handlers import register_handlers
 from aiogram import executor
 from globals import dp, scheduler
-from async_scheduler import AsyncScheduler
 from congratulations import prepare_congratulation_jobs
 
 if __name__ == '__main__':

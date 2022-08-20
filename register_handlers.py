@@ -1,3 +1,4 @@
+from cgitb import text
 from handlers import *
 from aiogram import Dispatcher
 from preferences import *
@@ -30,5 +31,8 @@ def register_handlers(dp: Dispatcher):
     dp.register_message_handler(command_add_game, commands=['add_game'])
     dp.register_message_handler(command_add_member, commands=['add_member'])
     dp.register_message_handler(command_delete_member, commands=['delete_member'])
+    
+    dp.register_message_handler(pipka_size, commands=['pipkasize'])
+    dp.register_message_handler(pipka_size, text=['Пипка', 'пипка'])
 
 

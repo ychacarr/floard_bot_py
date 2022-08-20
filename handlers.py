@@ -1,10 +1,13 @@
+from asyncio import sleep
 from aiogram import types
 from keyboards_and_buttons import *
 import random
 from database import *
 import copy
+from random import randint
 
 
+pipka_max_size = randint(20, 30)
 
 # сегодняшний вечер клацаем, затем задаём кто есть. затем кто первый, сплит команд, выбор игры
 
@@ -186,6 +189,36 @@ async def command_choose_game_result(callback: types.CallbackQuery):
         await callback.message.edit_text('Таких игр для вас не найдено')
     await callback.message.answer('Выберите шонить', reply_markup=kb_today_menu)
 
+
+async def pipka_size(message: types.Message):
+    """
+    Замер пипки. У Сани всегда больше всех. 
+    """
+    if (message.from_id == Member.get((Member.name == 'Александр') & (Member.surname == 'Ситник')).telegram_id):
+        global pipka_max_size
+        pipka_max_size = pipka_max_size + randint(0, 5)
+        await message.answer(f'Размер твоей пипки равен {pipka_max_size} сантиметрам! 🤯😲')
+    else:
+        temp_size = randint(0, pipka_max_size - 1)
+        if (temp_size >= (pipka_max_size / 2 + 5)):
+            await message.answer(f'Размер твоей пипки равен {temp_size} сантиметрам! 🧐👍🏿')
+        elif (temp_size >= 15):
+            await message.answer(f'Размер твоей пипки равен {temp_size} сантиметрам! 🤓👍🏻')
+        elif (temp_size >= 10):
+            await message.answer(f'Размер твоей пипки равен {temp_size} сантиметрам... 😐👌')
+        elif (temp_size >= 5):
+            await message.answer(f'Размер твоей пипки равен {temp_size} сантиметрам... 😕')
+        elif (temp_size > 2):
+            await message.answer(f'Размер твоей пипки равен {temp_size} сантиметрам... 😨')
+        else:
+            await message.answer('Смотрю, смотрю, но ничего не вижу... Погоди, достану микроскоп...')
+            await message.answer('🔬')
+            temp_size = randint(0, 10)
+            await sleep(3)
+            if (temp_size != 0):
+                await message.answer(f'Ага! Разглядел. Размер пипки равен {temp_size} *миллиметрам*! 🤭', parse_mode="markdown")
+            else:
+                await message.answer('Прости... Не помог даже микроскоп... 😰')
 
 
 

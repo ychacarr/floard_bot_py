@@ -1,8 +1,7 @@
-from cgitb import text
 from handlers import *
 from aiogram import Dispatcher
 from preferences import *
-
+from globals import BOT_USERNAME
 
 def register_handlers(dp: Dispatcher):
     dp.register_message_handler(command_start, commands=['start'])
@@ -33,6 +32,11 @@ def register_handlers(dp: Dispatcher):
     dp.register_message_handler(command_delete_member, commands=['delete_member'])
     
     dp.register_message_handler(pipka_size, commands=['pipkasize'])
-    dp.register_message_handler(pipka_size, text=['Пипка', 'пипка'])
-
+    # хэндлер снизу реагирует на слово "пипка" (без учёта регистра):
+        # если чат личный - проверка только на содержание в тексте слова "пипка"
+        # иначе, проверяет наличие в тексте упоминания бота и содержание в тексте слова "пипка"
+    # в итоге в беседах, команда активируется только если написать "@здесь_упоминание_бота пипка".
+    dp.register_message_handler(pipka_size, lambda msg: 
+                                                (msg.chat.type == 'private' and msg.text.lower() == 'пипка') or
+                                                (f'@{BOT_USERNAME}' in msg.text and msg.text.lower() != 'пипка'))
 

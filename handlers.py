@@ -201,24 +201,29 @@ async def pipka_size(message: types.Message):
     else:
         temp_size = randint(0, pipka_max_size - 1)
         if (temp_size >= (pipka_max_size / 2 + 5)):
-            await message.answer(f'Размер твоей пипки равен {temp_size} сантиметрам! 🧐👍🏿')
+            await message.answer(f'Размер твоей пипки равен {temp_size} сантиметрам! 🧐👏🏿')
         elif (temp_size >= 15):
             await message.answer(f'Размер твоей пипки равен {temp_size} сантиметрам! 🤓👍🏻')
         elif (temp_size >= 10):
             await message.answer(f'Размер твоей пипки равен {temp_size} сантиметрам... 😐👌')
         elif (temp_size >= 5):
             await message.answer(f'Размер твоей пипки равен {temp_size} сантиметрам... 😕')
-        elif (temp_size > 2):
+        elif (temp_size >= 2):
             await message.answer(f'Размер твоей пипки равен {temp_size} сантиметрам... 😨')
+        elif (temp_size == 1):
+            await message.answer(f'Размер твоей пипки равен {temp_size} сантиметру... 😰')
         else:
             await message.answer('Смотрю, смотрю, но ничего не вижу... Погоди, достану микроскоп...')
             await message.answer('🔬')
             temp_size = randint(0, 10)
             await sleep(3)
             if (temp_size != 0):
-                await message.answer(f'Ага! Разглядел. Размер пипки равен {temp_size} *миллиметрам*! 🤭', parse_mode="markdown")
+                if (temp_size != 1):
+                    await message.answer(f'Ага! Разглядел. Размер пипки равен {temp_size} *миллиметрам*! 🤭', parse_mode="markdown")
+                else:
+                    await message.answer(f'Ага! Разглядел. Размер пипки равен {temp_size} *миллиметру*! 🤭', parse_mode="markdown")
             else:
-                await message.answer('Прости... Не помог даже микроскоп... 😰')
+                await message.answer('Прости... Не помог даже микроскоп... 🙈')
 
 
 

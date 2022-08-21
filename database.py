@@ -2,6 +2,7 @@ from ast import List
 from re import T
 from telnetlib import GA
 from peewee import *
+from random import randint
 
 DBFile = SqliteDatabase('./data/floardbase.db')
 
@@ -75,6 +76,46 @@ class Preference(BaseModel):
             (('member_id', 'game_id'), True),
         )
         primary_key = CompositeKey('game_id', 'member_id')
+
+class KekNoun(BaseModel):
+    id = AutoField(column_name='ID', null=False)
+    male = TextField(column_name='Male', unique=True, null=False)
+    feminine = TextField(column_name='Feminine', unique=True, null=False)
+
+    def get_random(sex:str) -> str:
+        """
+        Возвращает рандомное существительное. Род задаётся параметром sex.
+
+        sex -- 'М' или 'Ж' задаёт род существительного
+        """
+        rand_el = KekNoun.get_by_id(randint(1, len(KekNoun)))
+        if (sex == 'М'):
+            return rand_el.male
+        else:
+            return rand_el.feminine
+
+    class Meta:
+        table_name = 'KekNoun'
+
+class KekAdjective(BaseModel):
+    id = AutoField(column_name='ID', null=False)
+    male = TextField(column_name='Male', unique=True, null=False)
+    feminine = TextField(column_name='Feminine', unique=True, null=False)
+
+    def get_random(sex:str) -> str:
+        """
+        Возвращает рандомное прилагательное. Род задаётся параметром sex.
+
+        sex -- 'М' или 'Ж' задаёт род прилагательного
+        """
+        rand_el = KekAdjective.get_by_id(randint(1, len(KekAdjective)))
+        if (sex == 'М'):
+            return rand_el.male
+        else:
+            return rand_el.feminine
+
+    class Meta:
+        table_name = 'KekAdjective'
 
 def add_preferences_with_Member(member_in, level_in = 2):
     """

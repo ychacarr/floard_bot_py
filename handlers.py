@@ -200,18 +200,21 @@ async def pipka_size(message: types.Message):
         await message.answer(f'Размер твоей пипки равен {pipka_max_size} сантиметрам! 🤯😲')
     else:
         temp_size = randint(0, pipka_max_size - 1)
+        size_string = f'{temp_size} сантиметрам'
+        if temp_size % 10 == 1:
+            size_string = f'{temp_size} сантриметру'
         if (temp_size >= (pipka_max_size / 2 + 5)):
-            await message.answer(f'Размер твоей пипки равен {temp_size} сантиметрам! 🧐👏🏿')
+            await message.answer(f'Размер твоей пипки равен {size_string}! 🧐👏🏿')
         elif (temp_size >= 15):
-            await message.answer(f'Размер твоей пипки равен {temp_size} сантиметрам! 🤓👍🏻')
+            await message.answer(f'Размер твоей пипки равен {size_string}! 🤓👍🏻')
         elif (temp_size >= 10):
-            await message.answer(f'Размер твоей пипки равен {temp_size} сантиметрам... 😐👌')
+            await message.answer(f'Размер твоей пипки равен {size_string}. 😐👌')
         elif (temp_size >= 5):
-            await message.answer(f'Размер твоей пипки равен {temp_size} сантиметрам... 😕')
+            await message.answer(f'Размер твоей пипки равен {size_string}. 😕')
         elif (temp_size >= 2):
-            await message.answer(f'Размер твоей пипки равен {temp_size} сантиметрам... 😨')
+            await message.answer(f'Размер твоей пипки равен {size_string}... 😨')
         elif (temp_size == 1):
-            await message.answer(f'Размер твоей пипки равен {temp_size} сантиметру... 😰')
+            await message.answer(f'Размер твоей пипки равен {size_string}... 😰')
         else:
             await message.answer('Смотрю, смотрю, но ничего не вижу... Погоди, достану микроскоп...')
             await message.answer('🔬')

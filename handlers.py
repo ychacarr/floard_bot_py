@@ -6,7 +6,6 @@ from database import *
 import copy
 from random import randint
 
-
 pipka_max_size = randint(20, 30)
 
 # сегодняшний вечер клацаем, затем задаём кто есть. затем кто первый, сплит команд, выбор игры
@@ -222,11 +221,24 @@ async def pipka_size(message: types.Message):
             await sleep(3)
             if (temp_size != 0):
                 if (temp_size != 1):
-                    await message.answer(f'Ага! Разглядел. Размер пипки равен {temp_size} *миллиметрам*! 🤭', parse_mode="markdown")
+                    await message.answer(f'Ага! Разглядел. Размер пипки равен {temp_size} *миллиметрам*! 🤭', parse_mode='markdown')
                 else:
-                    await message.answer(f'Ага! Разглядел. Размер пипки равен {temp_size} *миллиметру*! 🤭', parse_mode="markdown")
+                    await message.answer(f'Ага! Разглядел. Размер пипки равен {temp_size} *миллиметру*! 🤭', parse_mode='markdown')
             else:
                 await message.answer('Прости... Не помог даже микроскоп... 🙈')
+
+
+async def who_am_i(message: types.Message):
+    """
+    Команда '/whoami' ('кто я сегодня?')
+
+    Выдаёт случайно собранную кличку.\n
+    Кличка строится по "формуле": прилагательное + существительное.\n
+    Прилагательные и существительные берутся из таблиц БД KekAdjective и KekNoun.
+    """
+    writing_member = Member.get(Member.telegram_id == message.from_user.id)
+    result_str = f'{KekAdjective.get_random(writing_member.sex).lower()} {KekNoun.get_random(writing_member.sex)}'
+    await message.answer(f'Сегодня ты *{result_str}*!', parse_mode='markdown')
 
 
 

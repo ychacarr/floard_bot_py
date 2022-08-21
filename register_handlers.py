@@ -1,7 +1,7 @@
 from handlers import *
 from aiogram import Dispatcher
 from preferences import *
-from globals import BOT_USERNAME
+import globals
 
 def register_handlers(dp: Dispatcher):
     dp.register_message_handler(command_start, commands=['start'])
@@ -32,11 +32,17 @@ def register_handlers(dp: Dispatcher):
     dp.register_message_handler(command_delete_member, commands=['delete_member'])
     
     dp.register_message_handler(pipka_size, commands=['pipkasize'])
+    dp.register_message_handler(who_am_i, commands=['whoami'])
     # хэндлер снизу реагирует на слово "пипка" (без учёта регистра):
         # если чат личный - проверка только на содержание в тексте слова "пипка"
         # иначе, проверяет наличие в тексте упоминания бота и содержание в тексте слова "пипка"
     # в итоге в беседах, команда активируется только если написать "@здесь_упоминание_бота пипка".
     dp.register_message_handler(pipka_size, lambda msg: 
-                                                (msg.chat.type == 'private' and msg.text.lower() == 'пипка') or
-                                                (f'@{BOT_USERNAME}' in msg.text and msg.text.lower() != 'пипка'))
-
+                                                (msg.chat.type == 'private' and ('пипка') in msg.text.lower()) or
+                                                (globals.BOT_USERNAME in msg.text and ('пипка' in msg.text.lower()))
+                                )
+    # схема реакции хендлера аналогична хендлеру команды выше. Текст активации: "кто я сегодня?"
+    dp.register_message_handler(who_am_i, lambda msg:
+                                                (msg.chat.type == 'private' and 'кто я сегодня?' in msg.text.lower()) or
+                                                (f'{globals.BOT_USERNAME}' in msg.text and ('кто я сегодня?' in msg.text.lower()))
+                                )

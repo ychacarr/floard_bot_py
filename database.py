@@ -55,6 +55,7 @@ class Member(BaseModel):
     nickname = TextField(column_name='Nickname', null=True, unique=True)
     surname = TextField(column_name='Surname')
     telegram_id = BigIntegerField(column_name='TelegramID', null=True, unique=True)
+    sex = TextField(column_name='Sex')
 
     @property
     def full_name(self):

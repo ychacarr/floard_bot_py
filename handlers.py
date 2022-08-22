@@ -191,41 +191,46 @@ async def command_choose_game_result(callback: types.CallbackQuery):
 
 async def pipka_size(message: types.Message):
     """
+    Команда '/pipkasize' ('пипка')
+    
     Замер пипки. У Сани всегда больше всех. 
     """
+    reply_mention = ''
+    if message.chat.type != 'private':
+        reply_mention = f'@{message.from_user.username}! '
     if (message.from_id == Member.get((Member.name == 'Александр') & (Member.surname == 'Ситник')).telegram_id):
         global pipka_max_size
         pipka_max_size = pipka_max_size + randint(0, 5)
-        await message.answer(f'Размер твоей пипки равен {pipka_max_size} сантиметрам! 🤯😲')
+        await message.answer(f'{reply_mention}Размер твоей пипки равен {pipka_max_size} сантиметрам! 🤯😲')
     else:
         temp_size = randint(0, pipka_max_size - 1)
         size_string = f'{temp_size} сантиметрам'
         if temp_size % 10 == 1:
             size_string = f'{temp_size} сантриметру'
         if (temp_size >= (pipka_max_size / 2 + 5)):
-            await message.answer(f'Размер твоей пипки равен {size_string}! 🧐👏🏿')
+            await message.answer(f'{reply_mention}Размер твоей пипки равен {size_string}! 🧐👏🏿')
         elif (temp_size >= 15):
-            await message.answer(f'Размер твоей пипки равен {size_string}! 🤓👍🏻')
+            await message.answer(f'{reply_mention}Размер твоей пипки равен {size_string}! 🤓👍🏻')
         elif (temp_size >= 10):
-            await message.answer(f'Размер твоей пипки равен {size_string}. 😐👌')
+            await message.answer(f'{reply_mention}Размер твоей пипки равен {size_string}. 😐👌')
         elif (temp_size >= 5):
-            await message.answer(f'Размер твоей пипки равен {size_string}. 😕')
+            await message.answer(f'{reply_mention}Размер твоей пипки равен {size_string}. 😕')
         elif (temp_size >= 2):
-            await message.answer(f'Размер твоей пипки равен {size_string}... 😨')
+            await message.answer(f'{reply_mention}Размер твоей пипки равен {size_string}... 😨')
         elif (temp_size == 1):
-            await message.answer(f'Размер твоей пипки равен {size_string}... 😰')
+            await message.answer(f'{reply_mention}Размер твоей пипки равен {size_string}... 😰')
         else:
-            await message.answer('Смотрю, смотрю, но ничего не вижу... Погоди, достану микроскоп...')
+            await message.answer(f'{reply_mention}Смотрю, смотрю, но ничего не вижу... Погоди, достану микроскоп...')
             await message.answer('🔬')
             temp_size = randint(0, 10)
             await sleep(3)
             if (temp_size != 0):
                 if (temp_size != 1):
-                    await message.answer(f'Ага! Разглядел. Размер пипки равен {temp_size} *миллиметрам*! 🤭', parse_mode='markdown')
+                    await message.answer(f'Ага! Разглядел. {reply_mention}Размер пипки равен {temp_size} *миллиметрам*! 🤭', parse_mode='markdown')
                 else:
-                    await message.answer(f'Ага! Разглядел. Размер пипки равен {temp_size} *миллиметру*! 🤭', parse_mode='markdown')
+                    await message.answer(f'Ага! Разглядел. {reply_mention}Размер пипки равен {temp_size} *миллиметру*! 🤭', parse_mode='markdown')
             else:
-                await message.answer('Прости... Не помог даже микроскоп... 🙈')
+                await message.answer(f'{reply_mention}Прости... Не помог даже микроскоп... 🙈')
 
 
 async def who_am_i(message: types.Message):
@@ -238,7 +243,10 @@ async def who_am_i(message: types.Message):
     """
     writing_member = Member.get(Member.telegram_id == message.from_user.id)
     result_str = f'{KekAdjective.get_random(writing_member.sex).lower()} {KekNoun.get_random(writing_member.sex)}'
-    await message.answer(f'Сегодня ты *{result_str}*!', parse_mode='markdown')
+    if message.chat.type != 'private':
+        await message.answer(f'@{message.from_user.username}, сегодня ты *{result_str}*!', parse_mode='markdown')
+    else:
+        await message.answer(f'Сегодня ты *{result_str}*!', parse_mode='markdown')
 
 
 

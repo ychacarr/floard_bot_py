@@ -33,6 +33,7 @@ def register_handlers(dp: Dispatcher):
     
     dp.register_message_handler(pipka_size, commands=['pipkasize'])
     dp.register_message_handler(who_am_i, commands=['whoami'])
+    dp.register_message_handler(magic_ball_helper, commands=['magickball'])
     # хэндлер снизу реагирует на слово "пипка" (без учёта регистра):
         # если чат личный - проверка только на содержание в тексте слова "пипка"
         # иначе, проверяет наличие в тексте упоминания бота и содержание в тексте слова "пипка"
@@ -45,4 +46,10 @@ def register_handlers(dp: Dispatcher):
     dp.register_message_handler(who_am_i, lambda msg:
                                                 (msg.chat.type == 'private' and 'кто я сегодня?' in msg.text.lower()) or
                                                 (f'{globals.BOT_USERNAME}' in msg.text and ('кто я сегодня?' in msg.text.lower()))
+                                )
+    # схема реакции аналогична хендеру выше. Текст активации должен содержать вопросительный знак.
+    # !ВАЖНО! этот хендлер должен идти после любой другой команды, текст активации которой содержит вопросительный знак!
+    dp.register_message_handler(magic_ball, lambda msg:
+                                                (msg.chat.type == 'private' and '?' in msg.text) or
+                                                (f'{globals.BOT_USERNAME}' in msg.text and ('?' in msg.text))
                                 )

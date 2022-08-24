@@ -3,5 +3,3 @@ __pycache__
 *.db
 *.idea
 *.backup
-.github
-*.yml

@@ -4,3 +4,4 @@ __pycache__
 *.idea
 *.backup
 .github
+*.yml

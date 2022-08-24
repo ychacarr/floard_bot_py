@@ -1,10 +1,13 @@
+from asyncio import sleep
 from aiogram import types
 from keyboards_and_buttons import *
 import random
 from database import *
 import copy
+from random import randint
+import globals
 
-
+pipka_max_size = randint(20, 30)
 
 # сегодняшний вечер клацаем, затем задаём кто есть. затем кто первый, сплит команд, выбор игры
 
@@ -187,6 +190,100 @@ async def command_choose_game_result(callback: types.CallbackQuery):
     await callback.message.answer('Выберите шонить', reply_markup=kb_today_menu)
 
 
+async def pipka_size(message: types.Message):
+    """
+    Команда '/pipkasize' ('пипка')
+    
+    Замер пипки. У Сани всегда больше всех. 
+    """
+    reply_mention = ''
+    if message.chat.type != 'private':
+        reply_mention = f'@{message.from_user.username}! '
+    if (message.from_id == Member.get((Member.name == 'Александр') & (Member.surname == 'Ситник')).telegram_id):
+        global pipka_max_size
+        pipka_max_size = pipka_max_size + randint(0, 5)
+        await message.answer(f'{reply_mention}Размер твоей пипки равен {pipka_max_size} сантиметрам! 🤯😲')
+    else:
+        temp_size = randint(0, pipka_max_size - 1)
+        size_string = f'{temp_size} сантиметрам'
+        if temp_size % 10 == 1:
+            size_string = f'{temp_size} сантриметру'
+        if (temp_size >= (pipka_max_size / 2 + 5)):
+            await message.answer(f'{reply_mention}Размер твоей пипки равен {size_string}! 🧐👏🏿')
+        elif (temp_size >= 15):
+            await message.answer(f'{reply_mention}Размер твоей пипки равен {size_string}! 🤓👍🏻')
+        elif (temp_size >= 10):
+            await message.answer(f'{reply_mention}Размер твоей пипки равен {size_string}. 😐👌')
+        elif (temp_size >= 5):
+            await message.answer(f'{reply_mention}Размер твоей пипки равен {size_string}. 😕')
+        elif (temp_size >= 2):
+            await message.answer(f'{reply_mention}Размер твоей пипки равен {size_string}... 😨')
+        elif (temp_size == 1):
+            await message.answer(f'{reply_mention}Размер твоей пипки равен {size_string}... 😰')
+        else:
+            await message.answer(f'{reply_mention}Смотрю, смотрю, но ничего не вижу... Погоди, достану микроскоп...')
+            await message.answer('🔬')
+            temp_size = randint(0, 10)
+            await sleep(3)
+            if (temp_size != 0):
+                if (temp_size != 1):
+                    await message.answer(f'Ага! Разглядел. {reply_mention}Размер пипки равен {temp_size} *миллиметрам*! 🤭', parse_mode='markdown')
+                else:
+                    await message.answer(f'Ага! Разглядел. {reply_mention}Размер пипки равен {temp_size} *миллиметру*! 🤭', parse_mode='markdown')
+            else:
+                await message.answer(f'{reply_mention}Прости... Не помог даже микроскоп... 🙈')
+
+
+async def who_am_i(message: types.Message):
+    """
+    Команда '/whoami' ('кто я сегодня?')
+
+    Выдаёт случайно собранную кличку.\n
+    Кличка строится по "формуле": прилагательное + существительное.\n
+    Прилагательные и существительные берутся из таблиц БД KekAdjective и KekNoun.
+    """
+    writing_member = Member.get(Member.telegram_id == message.from_user.id)
+    result_str = f'{KekAdjective.get_random(writing_member.sex).lower()} {KekNoun.get_random(writing_member.sex)}'
+    if message.chat.type != 'private':
+        await message.answer(f'@{message.from_user.username}, сегодня ты *{result_str}*!', parse_mode='markdown')
+    else:
+        await message.answer(f'Сегодня ты *{result_str}*!', parse_mode='markdown')
+
+
+async def magic_ball_helper(message: types.Message):
+    """
+    Выводит справку по использованию функционала магического шара.
+
+    Активируется командой /magickball
+    """
+    await message.answer(f'Если хочешь получить небольшое предсказание, отправь сообщение с упоминанием меня, содержащее интересующий тебя вопрос вида да\нет.\n' +
+                            'В личном чате можешь не писать упоминание, просто отправь сообщение с вопросительным знаком.\n\n' +
+                            f'Пример: \"Эй, @{globals.BOT_USERNAME}, мы сегодня сыграем в монополию?\"\n\n' +
+                            'Если хочешь получить быстрое предсказание, добавь микрокоманду [быстро] в любое место текста.\n\n' +
+                            f'Пример: \"Эй, @{globals.BOT_USERNAME}, а в мафию сыграем? [быстро]\"\n' +
+                            f'или так: \"@{globals.BOT_USERNAME} [быстро] может хотя бы в магов?\"')
+
+
+async def magic_ball(message: types.Message):
+    """
+    Функция генерации предсказания в ответ на вопрос боту.
+    """
+    msg_member = Member.get(Member.telegram_id == message.from_user.id)
+    replies_list = ['Абсолютли!', 'Всё чётко! Сумеешь, смогёшь!', 'Никаких сомнений!', 'Определенно да!', 'Мои источники даже не сомневаются в успехе!',
+                    'Кажется, что \"Да\".', 'Вероятнее всего.', 'Перспективы хорошие.', 'Космос говорит \"Да, но это неточно.\".', 'Да.', 
+                    'Пока решения нет..', f'Спроси по новой, {msg_member.name}, всё фигня..', 'Сущность в виде гномика закрывает обзор будущего..', 
+                    'Ты втираешь мне какую-то дичь..', 'Попробуй выйти на связь снова..', 'Мой ответ \"Нет\"...', 'Перспективы не очень хорошие...',
+                    'Честно говоря, весьма сомнительно...', 'Иммолед импрувед, или в переводе - вероятность этого события крайне мала...']
+    if '[быстро]' not in message.text:
+        testing = await message.reply('Хмм... Посылаю сигнал в космос...📡')
+        await sleep(2)
+        await testing.edit_text('...Стучусь в пятый дом Юпитера...🔮')
+        await sleep(2)
+        await testing.edit_text('...Ищу номера в слове \"нумерология\"...🎱')
+        await sleep(2)
+        await testing.edit_text(f'{replies_list[randint(0, len(replies_list))]}')
+    else:
+        await message.reply(f'{replies_list[randint(0, len(replies_list))]}')
 
 
 

@@ -1,6 +1,7 @@
 import ast
 import asyncio
 import datetime
+from importlib import import_module
 from inspect import iscoroutinefunction
 import logging
 from typing import Any, Awaitable, Callable, Dict, List
@@ -120,7 +121,9 @@ class Job:
         """
         data = in_str.split('|')
         if (len(data) == 7):
-            func = getattr(sys.modules[data[2]], data[1])
+            print(sys.modules.get(data[2]))
+            imp_module = import_module(data[2])
+            func = getattr(imp_module, data[1])
             kwargs = None
             if (data[3] != 'None'):
                 kwargs = ast.literal_eval(data[3])

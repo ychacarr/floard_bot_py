@@ -1,7 +1,7 @@
 from async_scheduler import Job, Periods
 from database import Member
-from globals import dp, scheduler
-from datetime import datetime
+import globals
+from datetime import datetime, timedelta
 import aiohttp
 import logging
 from random import randint
@@ -29,7 +29,6 @@ async def congrats_from_yandex(name: str) -> str:
                     congrats_text = congrats_text.replace(key, exclude_words[key])
             return congrats_text
 
-
 async def congrats_from_porfirii(name: str) -> str:
     """
     Функция обращается к API сайта https://porfirevich.ru для генерации текста поздравления.
@@ -54,7 +53,9 @@ async def congrats_from_porfirii(name: str) -> str:
             if resp.status == 200:
                 log.info('Connection to porfirii API successfull. Generating congratulations.')
                 json_data = await resp.json()
-                congrats_text += json_data.get('replies')[randint(0, 2)]
+                replies_list = json_data.get('replies')
+                replies_list.sort(key=lambda str_item: len(str_item), reverse=True)
+                congrats_text += replies_list[0]
                 return congrats_text
             else:
                 log.error(f'Connection to porfirii failed! Response status: {resp.status}.')
@@ -83,16 +84,61 @@ async def write_congrats(member_id: int):
     """
     member = Member.get_by_id(member_id)
     congrats = await create_congrats(member.name)
-    await dp.bot.send_message(member.telegram_id, congrats)
+    if globals.MAIN_CHAT_ID is None:
+        await globals.dp.bot.send_message(member.telegram_id, congrats)
+    else:
+        member_tlg_info = await globals.dp.bot.get_chat_member(globals.MAIN_CHAT_ID, member.telegram_id)
+        await globals.dp.bot.send_message(globals.MAIN_CHAT_ID, f'@{member_tlg_info.user.username}\n{congrats}')
 
+async def write_notification(member_id: int):
+    """
+    Функция отправки уведомления о приближающемся ДР наполочника.
 
+    member_id -- id участника о дне рождении которого будет отправлено уведомление.\n
+    Уведомление отправляется в чат birthday_group_id.\n
+    Если birthday_group_id is None, отправка не происходит, ошибка не генерируется.
+    """
+    member = Member.get_by_id(member_id)
+    if member.birthday_group_id is not None:
+        await globals.dp.bot.send_message(member.birthday_group_id, f'Вставайте, вы, долбанные шашлыки! Приближается день рождения наполочника:\n{member.full_name}\n' +
+                                            f'Дата ДР:\n{member.birth_date}.')
+
+def prepare_congratulation_job(member) -> Job:
+    """
+    Функция готовит задачу планировщика AsyncScheduler (Job) поздравления наполочника. Поздравление отправляется в 12:00.
+
+    member -- объект Member, наполочника для поздравления\n
+
+    Функция, записываемая в Job.func: congratulations.write_congrats\n
+    Имя работы: member.full_name_birthday
+    """
+    year = datetime.now().year
+    birtday = (datetime.strptime(member.birth_date, '%d-%m-%Y').replace(year= year, hour=12, minute=0)).strftime('%d.%m.%y %H:%M')
+    return Job(f'{member.full_name}_birthday', write_congrats, {'member_id': member.id}, Periods.year, 1, birtday, False)
+
+def prepare_birthday_notification_job(member, period: timedelta = timedelta(weeks=2)):
+    """
+    Функция готовит задачу планировщика AsyncScheduler (Job) уведомления о ДР наполочника. Уведомление отправляется за period от даты дня рождения.
+
+    member -- объект Member, наполочника для отправки уведомления\n
+    period -- объект datetime.timedelta значение смещения даты отправки уведомления (смещение происходит от даты ДР). Значение по умолчанию 2 недели.\n
+
+    Функция, записываемая в Job.func: congratulations.write_notification\n
+    Имя работы: member.full_name_birthday_notification
+    """
+    year = datetime.now().year
+    birtday = (datetime.strptime(member.birth_date, '%d-%m-%Y').replace(year= year, hour=12, minute=0))
+    birtday = birtday - period
+    return Job(f'{member.full_name}_birthday_notification', write_notification, {'member_id': member.id}, Periods.year, 1, birtday.strftime('%d.%m.%y %H:%M'), False)
+    
 def prepare_congratulation_jobs() -> None:
     """
-    Функция готовит и заносит в планировщик задачи поздравления всех участников (Member из БД) в дни рождения.
+    Функция для всех наполочников с непустым telegram_id в БД вызывает prepare_congratulation_job и добавляет созданную работу в список globals.scheduler.
 
-    Поздравление отправляется в 12:00, в личный чат именинника.
+    Если у наполочника задан birthday_group_id, вызывает prepare_birthday_notification_job и добавляет работу в список globals.scheduler
     """
     for member in Member:
-        year = datetime.now().year
-        birtday = (datetime.strptime(member.birth_date, '%d-%m-%Y').replace(year= year, hour=12, minute=0)).strftime('%d.%m.%y %H:%M')
-        scheduler.add_job(Job(f'{member.full_name}_birthday', write_congrats, {'member_id': member.id}, Periods.year, 1, birtday, False))
+        if member.telegram_id is not None:
+            globals.scheduler.add_job(prepare_congratulation_job(member))
+        if member.birthday_group_id is not None:
+            globals.scheduler.add_job(prepare_birthday_notification_job(member))

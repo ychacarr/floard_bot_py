@@ -288,9 +288,9 @@ async def magic_ball(message: types.Message):
         await sleep(2)
         await testing.edit_text('...Ищу номера в слове \"нумерология\"...🎱')
         await sleep(2)
-        await testing.edit_text(f'{replies_list[randint(0, len(replies_list))]}')
+        await testing.edit_text(f'{replies_list[randint(0, len(replies_list) - 1)]}')
     else:
-        await message.reply(f'{replies_list[randint(0, len(replies_list))]}')
+        await message.reply(f'{replies_list[randint(0, len(replies_list)) - 1]}')
 
 
 async def set_main_chat(message: types.Message):

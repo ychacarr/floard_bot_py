@@ -60,5 +60,5 @@ def register_handlers(dp: Dispatcher):
                                 )
     # !ВАЖНО! Этот хендлер обрабатывает неизвестные команды. Он обязательно должен быть в самом конце списка хендлеров
     dp.register_message_handler(unknown_command, lambda msg:
-                                                    (msg.chat.type == 'pravate') or 
-                                                    (f'{globals.BOT_USERNAME}' in msg.text))
+                                                    ((msg.chat.type == 'private') or 
+                                                    (f'{globals.BOT_USERNAME}' in msg.text)))

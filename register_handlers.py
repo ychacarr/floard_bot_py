@@ -5,6 +5,7 @@ import globals
 
 def register_handlers(dp: Dispatcher):
     dp.register_message_handler(command_start, commands=['start'])
+    dp.register_message_handler(command_help, commands=['help'])
     dp.register_callback_query_handler(command_split_team, text='split_team')
     dp.register_callback_query_handler(command_split_team_result, text=['two_teams', 'three_teams', 'four_teams',
                                                                         'five_teams'])

@@ -31,6 +31,10 @@ def register_handlers(dp: Dispatcher):
     dp.register_message_handler(command_add_member, commands=['add_member'])
     dp.register_message_handler(command_delete_member, commands=['delete_member'])
     
+    # admin commands
+    dp.register_message_handler(set_main_chat, commands=['setmain'])
+    dp.register_message_handler(set_birthday_chat, commands=['setbirthday'])
+
     dp.register_message_handler(pipka_size, commands=['pipkasize'])
     dp.register_message_handler(who_am_i, commands=['whoami'])
     dp.register_message_handler(magic_ball_helper, commands=['magickball'])
@@ -48,8 +52,10 @@ def register_handlers(dp: Dispatcher):
                                                 (f'{globals.BOT_USERNAME}' in msg.text and ('кто я сегодня?' in msg.text.lower()))
                                 )
     # схема реакции аналогична хендеру выше. Текст активации должен содержать вопросительный знак.
-    # !ВАЖНО! этот хендлер должен идти после любой другой команды, текст активации которой содержит вопросительный знак!
+    # !ВАЖНО! Этот хендлер должен идти после любой другой команды, текст активации которой содержит вопросительный знак!
     dp.register_message_handler(magic_ball, lambda msg:
                                                 (msg.chat.type == 'private' and '?' in msg.text) or
                                                 (f'{globals.BOT_USERNAME}' in msg.text and ('?' in msg.text))
                                 )
+    # !ВАЖНО! Этот хендлер обрабатывает неизвестные команды. Он обязательно должен быть в самом конце списка хендлеров
+    dp.register_message_handler(unknown_command)

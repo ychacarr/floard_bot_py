@@ -1,4 +1,5 @@
 from asyncio import sleep
+from genericpath import commonprefix
 from aiogram import types
 from keyboards_and_buttons import *
 import random
@@ -6,6 +7,8 @@ from database import *
 import copy
 from random import randint
 import globals
+from data import config
+from congratulations import prepare_birthday_notification_job
 
 pipka_max_size = randint(20, 30)
 
@@ -285,6 +288,59 @@ async def magic_ball(message: types.Message):
     else:
         await message.reply(f'{replies_list[randint(0, len(replies_list))]}')
 
+
+async def set_main_chat(message: types.Message):
+    """
+    Функция обновления ID главного чата.
+
+    Срабатывает только на сообщения от пользователей, чей telegram_id входит в список из файла config.py (admin_id_list)\n
+    Вызывает unknown_command в ином случае.
+    """
+    if (message.chat.type != 'private' and message.from_user.id in config.admin_id_list):
+        status = await globals.save_main_chat_id(message.chat.id)
+        if status:
+            await message.answer('ID главного чата успешно обновлён.')
+        else:
+            await message.answer('Не смог обновить ID главного чата.')
+    else:
+        await unknown_command(message)
+
+
+async def set_birthday_chat(message: types.Message):
+    """
+    Функция обновления ID чата подготовки ко дню рождения наполочника.
+
+    Срабатывает только на сообщения от пользователей, чей telegram_id входит в список из файла config.py (admin_id_list)\n
+    Вызывает unknown_command если telegram_id не в списке разрешенных.\n
+
+    Ожидает формат: /setbirthday Имя Фамилия\n
+    В случае возникновения ошибки отправляет её содержание в личный чат написавшего команду.
+    """
+    if (message.chat.type != 'private' and message.from_user.id in config.admin_id_list):
+        member_names_list = (message.text.removeprefix('/setbirthday ')).split(' ')
+        try:
+            if (len(member_names_list) == 2):
+                member = Member.get((Member.name == member_names_list[0]) & (Member.surname == member_names_list[1]))
+                member.birthday_group_id = message.chat.id
+                member.save()
+                globals.scheduler.delete_job(f'{member.full_name}_birthday_notification')
+                globals.scheduler.add_job(prepare_birthday_notification_job(member))
+                await message.answer(f'Чат сохранён в качестве чата подготовки к ДР наполочника: {member.full_name}.\nДата дня рождения: {member.birth_date}' +
+                                        '\nПришлю уведомление за две недели до праздника.')
+            else:
+                raise Exception('На нашёл имени наполочника в тексте команды. Использование: /setbirthday Имя Фамилия')
+        except Exception as err:
+            await message.answer('Не смог обновить поздравительный чат наполочника. Подробности отправил в личный чат.')
+            await globals.dp.bot.send_message(message.from_user.id, f'При попытке обновить поздравительный чат наполочника произошла ошибка: {err}')
+    else:
+        await unknown_command(message)
+
+
+async def unknown_command(message: types.Message):
+    """
+    Функция обработчик всех неизвестных команд.
+    """
+    await message.answer('Извини, я не знаю такой команды.')
 
 
 async def command_birthdays():

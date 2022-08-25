@@ -22,6 +22,10 @@ async def command_start(message: types.Message):
     global today_members
     today_members = []
 
+async def command_help(message: types.Message):
+    await message.answer('Вот, что я умею:\n/start - начинает вечер\n/pipkasize - может измерить твою пипку;\n/whoami - скажет кто ты сегодня;\n' +
+                            '/magickball - может дать небольшое предсказание по интересующему тебя вопросу.')
+
 
 async def command_today_members(callback: types.CallbackQuery):
     """
@@ -209,7 +213,7 @@ async def pipka_size(message: types.Message):
     else:
         temp_size = randint(0, pipka_max_size - 1)
         size_string = f'{temp_size} сантиметрам'
-        if temp_size % 10 == 1:
+        if temp_size % 10 == 1 and temp_size != 11:
             size_string = f'{temp_size} сантриметру'
         if (temp_size >= (pipka_max_size / 2 + 5)):
             await message.answer(f'{reply_mention}Размер твоей пипки равен {size_string}! 🧐👏🏿')

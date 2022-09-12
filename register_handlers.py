@@ -38,16 +38,8 @@ def register_handlers(dp: Dispatcher):
 
     dp.register_message_handler(pipka_size, commands=['pipkasize'])
     dp.register_message_handler(who_am_i, commands=['whoami'])
-    dp.register_message_handler(magic_ball_helper, commands=['magickball'])
-    # хэндлер снизу реагирует на слово "пипка" (без учёта регистра):
-        # если чат личный - проверка только на содержание в тексте слова "пипка"
-        # иначе, проверяет наличие в тексте упоминания бота и содержание в тексте слова "пипка"
-    # в итоге в беседах, команда активируется только если написать "@здесь_упоминание_бота пипка".
-    dp.register_message_handler(pipka_size, lambda msg: 
-                                                (msg.chat.type == 'private' and ('пипка') in msg.text.lower()) or
-                                                (globals.BOT_USERNAME in msg.text and ('пипка' in msg.text.lower()))
-                                )
-    # схема реакции хендлера аналогична хендлеру команды выше. Текст активации: "кто я сегодня?"
+    dp.register_message_handler(magic_ball_helper, commands=['magicball'])
+    # схема реакции хендлера аналогична хендлеру команды "пипка". Текст активации: "кто я сегодня?"
     dp.register_message_handler(who_am_i, lambda msg:
                                                 (msg.chat.type == 'private' and 'кто я сегодня?' in msg.text.lower()) or
                                                 (f'{globals.BOT_USERNAME}' in msg.text and ('кто я сегодня?' in msg.text.lower()))
@@ -57,6 +49,14 @@ def register_handlers(dp: Dispatcher):
     dp.register_message_handler(magic_ball, lambda msg:
                                                 (msg.chat.type == 'private' and '?' in msg.text) or
                                                 (f'{globals.BOT_USERNAME}' in msg.text and ('?' in msg.text))
+                                )
+    # хэндлер снизу реагирует на слово "пипка" (без учёта регистра):
+        # если чат личный - проверка только на содержание в тексте слова "пипка"
+        # иначе, проверяет наличие в тексте упоминания бота и содержание в тексте слова "пипка"
+    # в итоге в беседах, команда активируется только если написать "@здесь_упоминание_бота пипка".
+    dp.register_message_handler(pipka_size, lambda msg: 
+                                                (msg.chat.type == 'private' and ('пипка') in msg.text.lower()) or
+                                                (globals.BOT_USERNAME in msg.text and ('пипка' in msg.text.lower()))
                                 )
     # !ВАЖНО! Этот хендлер обрабатывает неизвестные команды. Он обязательно должен быть в самом конце списка хендлеров
     dp.register_message_handler(unknown_command, lambda msg:

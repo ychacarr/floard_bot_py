@@ -1,4 +1,5 @@
 from asyncio import sleep
+from datetime import datetime
 from genericpath import commonprefix
 from aiogram import types
 from keyboards_and_buttons import *
@@ -9,6 +10,7 @@ from random import randint
 import globals
 from data import config
 from congratulations import prepare_birthday_notification_job
+from aiogram.types import InputFile
 
 pipka_max_size = randint(20, 30)
 
@@ -22,9 +24,23 @@ async def command_start(message: types.Message):
     global today_members
     today_members = []
 
+
 async def command_help(message: types.Message):
-    await message.answer('Вот, что я умею:\n/start - начинает вечер\n/pipkasize - может измерить твою пипку;\n/whoami - скажет кто ты сегодня;\n' +
-                            '/magicball - может дать небольшое предсказание по интересующему тебя вопросу.')
+    command_list =  [
+                        '\n/start - начинает вечер\n/pipkasize - может измерить твою пипку;',
+                        '\n/whoami - скажет кто ты сегодня;',
+                        '\n/magicball - может дать небольшое предсказание по интересующему тебя вопросу.',
+                    ]
+    admin_command_list = None
+    if (message.from_id in config.admin_id_list and message.chat.type == 'private'):
+        admin_command_list =    [
+                                    '\n\nКоманды отладки и администрирования:'
+                                    '\n/setmain - устанавливает текущий чат в качестве основного. Работает только к групповых чатах;',
+                                    '\n/setbirthday Имя Фамилия - сохраняет текущий чат в качестве чата подготовки дня рождения указанного наполочника. Работает только в групповых чатах;',
+                                    '\n/getdb - отправляет актуальный файл базы данных. Работает только в личном чате.'
+                                ]
+    send_str = ''.join(map(str, command_list)) if admin_command_list is None else ''.join(map(str, command_list + admin_command_list))
+    await message.answer(f'Вот, что я умею:\n{send_str}')
 
 
 async def command_today_members(callback: types.CallbackQuery):
@@ -351,6 +367,16 @@ async def set_birthday_chat(message: types.Message):
         except Exception as err:
             await message.answer('Не смог обновить поздравительный чат наполочника. Подробности отправил в личный чат.')
             await globals.dp.bot.send_message(message.from_user.id, f'При попытке обновить поздравительный чат наполочника произошла ошибка: {err}')
+    else:
+        await unknown_command(message)
+
+
+async def get_db_command(message: types.Message):
+    if (message.chat.type == 'private' and message.from_id in config.admin_id_list):
+        date_str = datetime.now().strftime('%Y-%m-%d')
+        filename = f'{date_str}.db'
+        db_file = InputFile('./data/floardbase.db', filename=filename)
+        await message.answer_document(document=db_file, caption='Файл базы данных.')
     else:
         await unknown_command(message)
 

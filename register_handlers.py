@@ -35,6 +35,7 @@ def register_handlers(dp: Dispatcher):
     # admin commands
     dp.register_message_handler(set_main_chat, commands=['setmain'])
     dp.register_message_handler(set_birthday_chat, commands=['setbirthday'])
+    dp.register_message_handler(get_db_command, commands=['getdb'])
 
     dp.register_message_handler(pipka_size, commands=['pipkasize'])
     dp.register_message_handler(who_am_i, commands=['whoami'])

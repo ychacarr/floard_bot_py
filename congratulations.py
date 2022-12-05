@@ -3,9 +3,7 @@ from database import Member
 import globals
 from datetime import datetime, timedelta
 from aiohttp import ClientSession
-from aiohttp.web import HTTPException
 import logging
-from random import randint
 from typing import Optional
 
 log = logging.getLogger('congratulations_module')

@@ -9,7 +9,7 @@ import copy
 from random import randint
 import globals
 from data import config
-from congratulations import prepare_birthday_notification_job
+from congratulations import prepare_birthday_notification
 from aiogram.types import InputFile
 
 pipka_max_size = randint(20, 30)
@@ -359,7 +359,7 @@ async def set_birthday_chat(message: types.Message):
                 member.birthday_group_id = message.chat.id
                 member.save()
                 globals.scheduler.delete_job(f'{member.full_name}_birthday_notification')
-                globals.scheduler.add_job(prepare_birthday_notification_job(member))
+                globals.scheduler.add_job(prepare_birthday_notification(member))
                 await message.answer(f'Чат сохранён в качестве чата подготовки к ДР наполочника: {member.full_name}.\nДата дня рождения: {member.birth_date}' +
                                         '\nПришлю уведомление за две недели до праздника.')
             else:

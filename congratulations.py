@@ -10,6 +10,7 @@ from typing import Optional
 
 log = logging.getLogger('congratulations_module')
 
+
 async def congrats_from_porfirii(session: ClientSession, base_congrats: str) -> Optional[str]:
     """
     Функция обращается к API сайта https://porfirevich.ru для генерации текста поздравления.
@@ -18,16 +19,19 @@ async def congrats_from_porfirii(session: ClientSession, base_congrats: str) -> 
     """
     post_payload = {"prompt": base_congrats, "length": 50}
     log.info('Trying to connect to porfirii API...')
-    async with session.post('https://pelevin.gpt.dobro.ai/generate/', json= post_payload) as resp:
+    async with session.post('https://pelevin.gpt.dobro.ai/generate/', json=post_payload) as resp:
         if resp.status == 200:
-            log.info('Connection to porfirii API successfull. Generating congratulations.')
+            log.info(
+                'Connection to porfirii API successfull. Generating congratulations.')
             json_data = await resp.json()
             replies_list = json_data.get('replies')
-            replies_list.sort(key= len, reverse=True)
+            replies_list.sort(key=len, reverse=True)
             return replies_list[0]
         else:
-            log.error(f'Connection to porfirii failed! Response status: {resp.status}.')
+            log.error(
+                f'Connection to porfirii failed! Response status: {resp.status}.')
             return None
+
 
 async def congrats_from_yandex(session: ClientSession, base_congrats: str) -> Optional[str]:
     """
@@ -38,14 +42,17 @@ async def congrats_from_yandex(session: ClientSession, base_congrats: str) -> Op
     # return None
     post_payload = {"query": base_congrats, "intro": 0, "filter": 1}
     log.info('Trying to connect to Balaboba API...')
-    async with session.post('https://yandex.ru/lab/api/yalm/text3', json= post_payload) as resp:
+    async with session.post('https://yandex.ru/lab/api/yalm/text3', json=post_payload) as resp:
         if resp.status == 200:
-            log.info('Connection to Balaboba API successfull. Generating congratulations.')
+            log.info(
+                'Connection to Balaboba API successfull. Generating congratulations.')
             json_data = await resp.json()
             return json_data["text"]
         else:
-            log.error(f'Connection to Balaboba failed! Response status: {resp.status}.')
-            return None  
+            log.error(
+                f'Connection to Balaboba failed! Response status: {resp.status}.')
+            return None
+
 
 async def congrats_generator(congrats_template: str) -> str:
     """
@@ -57,6 +64,7 @@ async def congrats_generator(congrats_template: str) -> str:
         yield await congrats_from_yandex(session, congrats_template)
         yield await congrats_from_porfirii(session, congrats_template)
         yield "... мои нейронные облака сломались. Поэтому просто всего!"
+
 
 async def write_congrats(member_id: int):
     """
@@ -76,6 +84,7 @@ async def write_congrats(member_id: int):
         member_tlg_info = await globals.dp.bot.get_chat_member(globals.MAIN_CHAT_ID, member.telegram_id)
         await globals.dp.bot.send_message(globals.MAIN_CHAT_ID, f'@{member_tlg_info.user.username}\n{congrats_text}')
 
+
 async def write_notification(member_id: int):
     """
     Функция отправки уведомления о приближающемся ДР наполочника.
@@ -87,7 +96,8 @@ async def write_notification(member_id: int):
     member = Member.get_by_id(member_id)
     if member.birthday_group_id is not None:
         await globals.dp.bot.send_message(member.birthday_group_id, f'Вставайте, вы, долбанные шашлыки! Приближается день рождения наполочника:\n{member.full_name}\n' +
-                                            f'Дата ДР:\n{member.birth_date}.')
+                                          f'Дата ДР:\n{member.birth_date}.')
+
 
 def prepare_congratulation_job(member) -> Job:
     """
@@ -99,8 +109,10 @@ def prepare_congratulation_job(member) -> Job:
     Имя работы: member.full_name_birthday
     """
     year = datetime.now().year
-    birtday = (datetime.strptime(member.birth_date, '%d-%m-%Y').replace(year= year, hour=12, minute=0)).strftime('%d.%m.%y %H:%M')
+    birtday = (datetime.strptime(member.birth_date, '%d-%m-%Y').replace(year=year,
+               hour=12, minute=0)).strftime('%d.%m.%y %H:%M')
     return Job(f'{member.full_name}_birthday', write_congrats, {'member_id': member.id}, Periods.year, 1, birtday, False)
+
 
 def prepare_birthday_notification_job(member, period: timedelta = timedelta(weeks=2)):
     """
@@ -113,10 +125,12 @@ def prepare_birthday_notification_job(member, period: timedelta = timedelta(week
     Имя работы: member.full_name_birthday_notification
     """
     year = datetime.now().year
-    birtday = (datetime.strptime(member.birth_date, '%d-%m-%Y').replace(year= year, hour=12, minute=0))
+    birtday = (datetime.strptime(member.birth_date,
+               '%d-%m-%Y').replace(year=year, hour=12, minute=0))
     birtday = birtday - period
     return Job(f'{member.full_name}_birthday_notification', write_notification, {'member_id': member.id}, Periods.year, 1, birtday.strftime('%d.%m.%y %H:%M'), False)
-    
+
+
 def prepare_congratulation_jobs() -> None:
     """
     Функция для всех наполочников с непустым telegram_id в БД вызывает prepare_congratulation_job и добавляет созданную работу в список globals.scheduler.
@@ -127,4 +141,5 @@ def prepare_congratulation_jobs() -> None:
         if member.telegram_id is not None:
             globals.scheduler.add_job(prepare_congratulation_job(member))
         if member.birthday_group_id is not None:
-            globals.scheduler.add_job(prepare_birthday_notification_job(member))
+            globals.scheduler.add_job(
+                prepare_birthday_notification_job(member))

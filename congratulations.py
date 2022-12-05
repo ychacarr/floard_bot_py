@@ -15,7 +15,7 @@ async def congrats_from_porfirii(session: ClientSession, base_congrats: str) -> 
 
     :base_congrats -- шаблон поздравления передаваемый Порфирьевичу\n
     """
-    post_payload = {"prompt": base_congrats, "length": 55}
+    post_payload = {"prompt": base_congrats, "length": 50}
     log.info('Trying to connect to porfirii API...')
     async with session.post('https://pelevin.gpt.dobro.ai/generate/', json=post_payload) as resp:
         if resp.status == 200:

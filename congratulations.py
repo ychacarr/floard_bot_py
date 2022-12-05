@@ -58,8 +58,8 @@ async def congrats_generator(congrats_template: str) -> str:
     :congrats_template -- шаблон поздравления, который будет передан API.
     """
     async with ClientSession() as session:
-        yield await congrats_from_yandex(session, congrats_template)
         yield await congrats_from_porfirii(session, congrats_template)
+        yield await congrats_from_yandex(session, congrats_template)
         yield "... мои нейронные облака сломались. Поэтому просто всего!"
 
 

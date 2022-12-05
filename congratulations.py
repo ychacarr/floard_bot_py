@@ -39,7 +39,6 @@ async def congrats_from_yandex(session: ClientSession, base_congrats: str) -> Op
 
     :base_congrats -- шаблон поздравления передаваемый Balabobe\n
     """
-    # return None
     post_payload = {"query": base_congrats, "intro": 0, "filter": 1}
     log.info('Trying to connect to Balaboba API...')
     async with session.post('https://yandex.ru/lab/api/yalm/text3', json=post_payload) as resp:

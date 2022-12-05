@@ -1,7 +1,7 @@
 from async_scheduler import Job, Periods
 from database import Member
 import globals
-from datetime import datetime, timedelta
+from datetime import datetime as dt, timedelta
 from aiohttp import ClientSession
 import logging
 from typing import Optional
@@ -91,12 +91,13 @@ async def write_notification(member_id: int):
     Если birthday_group_id is None, отправка не происходит, ошибка не генерируется.
     """
     member = Member.get_by_id(member_id)
+    notification_text = f"Вставайте, вы, долбанные шашлыки! Приближается день рождения наполочника:\n{member.full_name}\n" +\
+                        f"Дата ДР:\n{member.birth_date}"
     if member.birthday_group_id is not None:
-        await globals.dp.bot.send_message(member.birthday_group_id, f'Вставайте, вы, долбанные шашлыки! Приближается день рождения наполочника:\n{member.full_name}\n' +
-                                          f'Дата ДР:\n{member.birth_date}.')
+        await globals.dp.bot.send_message(member.birthday_group_id, notification_text)
 
 
-def prepare_congratulation_job(member) -> Job:
+def prepare_congratulation(member) -> Job:
     """
     Функция готовит задачу планировщика AsyncScheduler (Job) поздравления наполочника. Поздравление отправляется в 12:00.
 
@@ -105,13 +106,22 @@ def prepare_congratulation_job(member) -> Job:
     Функция, записываемая в Job.func: congratulations.write_congrats\n
     Имя работы: member.full_name_birthday
     """
-    year = datetime.now().year
-    birtday = (datetime.strptime(member.birth_date, '%d-%m-%Y').replace(year=year,
-               hour=12, minute=0)).strftime('%d.%m.%y %H:%M')
-    return Job(f'{member.full_name}_birthday', write_congrats, {'member_id': member.id}, Periods.year, 1, birtday, False)
+    now_year = dt.now().year
+    birtday = dt.strptime(member.birth_date, '%d-%m-%Y')
+    birtday = birtday.replace(year=now_year, hour=12, minute=0)
+    birtday_str = birtday.strftime('%d.%m.%y %H:%M')
+    return Job(
+        f'{member.full_name}_birthday',
+        write_congrats,
+        {'member_id': member.id},
+        Periods.year,
+        1,
+        birtday_str,
+        False
+    )
 
 
-def prepare_birthday_notification_job(member, period: timedelta = timedelta(weeks=2)):
+def prepare_birthday_notification(member, period: timedelta = timedelta(weeks=2)):
     """
     Функция готовит задачу планировщика AsyncScheduler (Job) уведомления о ДР наполочника. Уведомление отправляется за period от даты дня рождения.
 
@@ -121,11 +131,19 @@ def prepare_birthday_notification_job(member, period: timedelta = timedelta(week
     Функция, записываемая в Job.func: congratulations.write_notification\n
     Имя работы: member.full_name_birthday_notification
     """
-    year = datetime.now().year
-    birtday = (datetime.strptime(member.birth_date,
-               '%d-%m-%Y').replace(year=year, hour=12, minute=0))
-    birtday = birtday - period
-    return Job(f'{member.full_name}_birthday_notification', write_notification, {'member_id': member.id}, Periods.year, 1, birtday.strftime('%d.%m.%y %H:%M'), False)
+    now_year = dt.now().year
+    birtday = dt.strptime(member.birth_date, '%d-%m-%Y')
+    birtday.replace(year=now_year, hour=12, minute=0)
+    notification_date_str = (birtday - period).strftime('%d.%m.%y %H:%M')
+    return Job(
+        f'{member.full_name}_birthday_notification',
+        write_notification,
+        {'member_id': member.id},
+        Periods.year,
+        1,
+        notification_date_str,
+        False
+    )
 
 
 def prepare_congratulation_jobs() -> None:
@@ -136,7 +154,6 @@ def prepare_congratulation_jobs() -> None:
     """
     for member in Member:
         if member.telegram_id is not None:
-            globals.scheduler.add_job(prepare_congratulation_job(member))
+            globals.scheduler.add_job(prepare_congratulation(member))
         if member.birthday_group_id is not None:
-            globals.scheduler.add_job(
-                prepare_birthday_notification_job(member))
+            globals.scheduler.add_job(prepare_birthday_notification(member))

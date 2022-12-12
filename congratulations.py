@@ -9,13 +9,15 @@ from typing import Optional
 log = logging.getLogger('congratulations_module')
 
 
-async def congrats_from_porfirii(session: ClientSession, base_congrats: str) -> Optional[str]:
+async def congrats_from_porfirii(session: ClientSession, base_congrats: str, **kwargs) -> Optional[str]:
     """
     Функция обращается к API сайта https://porfirevich.ru для генерации текста поздравления.
 
     :base_congrats -- шаблон поздравления передаваемый Порфирьевичу\n
+    :length -- задаёт длину генерируемой последовательности (кол-во слов). По умолчанию 50.\n
     """
-    post_payload = {"prompt": base_congrats, "length": 50}
+    generated_text_lenght = 50 if len(kwargs) == 0 else kwargs["length"]
+    post_payload = {"prompt": base_congrats, "length": generated_text_lenght}
     log.info('Trying to connect to porfirii API...')
     async with session.post('https://pelevin.gpt.dobro.ai/generate/', json=post_payload) as resp:
         if resp.status == 200:
@@ -31,13 +33,15 @@ async def congrats_from_porfirii(session: ClientSession, base_congrats: str) -> 
             return None
 
 
-async def congrats_from_yandex(session: ClientSession, base_congrats: str) -> Optional[str]:
+async def congrats_from_yandex(session: ClientSession, base_congrats: str, **kwargs) -> Optional[str]:
     """
     Функция обращается к API Yandex Балабобы для генерации текста поздравления.
 
     :base_congrats -- шаблон поздравления передаваемый Balabobe\n
+    :intro -- задаёт стиль генерации (подробнее смотри на сайте Балабобы), по умолчанию 0\n
     """
-    post_payload = {"query": base_congrats, "intro": 0, "filter": 1}
+    balaboba_intro = 0 if len(kwargs) == 0 else kwargs["intro"]
+    post_payload = {"query": base_congrats, "intro": balaboba_intro, "filter": 1}
     log.info('Trying to connect to Balaboba API...')
     async with session.post('https://yandex.ru/lab/api/yalm/text3', json=post_payload) as resp:
         if resp.status == 200:

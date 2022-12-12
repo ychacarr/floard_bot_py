@@ -34,6 +34,7 @@ async def command_help(message: types.Message):
         '\n/start - начинает вечер\n/pipkasize - может измерить твою пипку;',
         '\n/whoami - скажет кто ты сегодня;',
         '\n/magicball - может дать небольшое предсказание по интересующему тебя вопросу.',
+        '\n/fortune - может дать тебе новогоднее предсказание.',
     ]
     admin_command_list = None
     if (message.from_id in config.admin_id_list and message.chat.type == 'private'):

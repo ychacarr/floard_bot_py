@@ -137,7 +137,7 @@ def prepare_birthday_notification(member, period: timedelta = timedelta(weeks=2)
     """
     now_year = dt.now().year
     birtday = dt.strptime(member.birth_date, '%d-%m-%Y')
-    birtday.replace(year=now_year, hour=12, minute=0)
+    birtday = birtday.replace(year=now_year, hour=12, minute=0)
     notification_date_str = (birtday - period).strftime('%d.%m.%y %H:%M')
     return Job(
         f'{member.full_name}_birthday_notification',

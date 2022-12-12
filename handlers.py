@@ -12,8 +12,10 @@ from data import config
 from congratulations import prepare_birthday_notification, congrats_from_porfirii, congrats_from_yandex
 from aiogram.types import InputFile
 from aiohttp import ClientSession
+import logging
 
 pipka_max_size = randint(20, 30)
+log = logging.getLogger('handlers_module')
 
 # сегодняшний вечер клацаем, затем задаём кто есть. затем кто первый, сплит команд, выбор игры
 
@@ -382,22 +384,25 @@ async def get_db_command(message: types.Message):
 
 
 async def get_new_year_fortune(message: types.Message):
-    api_choise = randint(0, 1000) % 3
     sender_member = Member.get_or_none(Member.telegram_id == message.from_id)
+    if sender_member is None:
+        log.info(f"In get_new_year_fortune got unknown telegram_id. From user: {message.from_user.username}")
     sender_name = sender_member.name if sender_member is not None else message.from_user.username
-    reply_message = await message.reply("Сканирую базу Деда Мороза...🎅")
-    fortune_template = f"{sender_name}, в новом году ты обязательно "
+    fortune_template = f"{sender_name}, в новом году ты обязательно"
     generated_fortune = None
+    reply_message = await message.reply("Сканирую базу Деда Мороза...🎅")
     aiohttp_session = ClientSession()
-    if api_choise == 0:
-        generated_fortune = await congrats_from_yandex(aiohttp_session, fortune_template, intro=6)
+    if randint(0, 1000) % 3 == 0:
+        # Balaboba won't put space in the begining of the generated text, so we put it manually
+        generated_fortune = " " + await congrats_from_yandex(aiohttp_session, fortune_template, intro=6)
     else:
-        generated_fortune = await congrats_from_porfirii(aiohttp_session, fortune_template, length=30)
-    if generated_fortune == None:
-        generated_fortune = f"{fortune_template} сможешь всё. А вот мои нейромозги пока не работают..."
+        generated_fortune = await congrats_from_porfirii(aiohttp_session, fortune_template, length=40)
+    generated_fortune = generated_fortune if generated_fortune is not None else \
+        f" сможешь всё. А вот мои нейромозги пока не работают..."
+    await aiohttp_session.close()
     await reply_message.edit_text("Гадаю по звуку салютов...🎆")
     await sleep(2)
-    await reply_message.edit_text(fortune_template)
+    await reply_message.edit_text(f"{fortune_template}{generated_fortune}")
 
 
 async def unknown_command(message: types.Message):

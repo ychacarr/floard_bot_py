@@ -9,8 +9,9 @@ import copy
 from random import randint
 import globals
 from data import config
-from congratulations import prepare_birthday_notification
+from congratulations import prepare_birthday_notification, congrats_from_porfirii, congrats_from_yandex
 from aiogram.types import InputFile
+from aiohttp import ClientSession
 
 pipka_max_size = randint(20, 30)
 
@@ -378,6 +379,25 @@ async def get_db_command(message: types.Message):
         await message.answer_document(document=db_file, caption='Файл базы данных.')
     else:
         await unknown_command(message)
+
+
+async def get_new_year_fortune(message: types.Message):
+    api_choise = randint(0, 1000) % 3
+    sender_member = Member.get_or_none(Member.telegram_id == message.from_id)
+    sender_name = sender_member.name if sender_member is not None else message.from_user.username
+    reply_message = await message.reply("Сканирую базу Деда Мороза...🎅")
+    fortune_template = f"{sender_name}, в новом году ты обязательно "
+    generated_fortune = None
+    aiohttp_session = ClientSession()
+    if api_choise == 0:
+        generated_fortune = await congrats_from_yandex(aiohttp_session, fortune_template, intro=6)
+    else:
+        generated_fortune = await congrats_from_porfirii(aiohttp_session, fortune_template, length=30)
+    if generated_fortune == None:
+        generated_fortune = f"{fortune_template} сможешь всё. А вот мои нейромозги пока не работают..."
+    await reply_message.edit_text("Гадаю по звуку салютов...🎆")
+    await sleep(2)
+    await reply_message.edit_text(fortune_template)
 
 
 async def unknown_command(message: types.Message):

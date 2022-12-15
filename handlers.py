@@ -9,12 +9,16 @@ import copy
 from random import randint
 import globals
 from data import config
-from congratulations import prepare_birthday_notification_job
+from congratulations import prepare_birthday_notification, congrats_from_porfirii, congrats_from_yandex
 from aiogram.types import InputFile
+from aiohttp import ClientSession
+import logging
 
 pipka_max_size = randint(20, 30)
+log = logging.getLogger('handlers_module')
 
 # сегодняшний вечер клацаем, затем задаём кто есть. затем кто первый, сплит команд, выбор игры
+
 
 async def command_start(message: types.Message):
     """
@@ -26,20 +30,22 @@ async def command_start(message: types.Message):
 
 
 async def command_help(message: types.Message):
-    command_list =  [
-                        '\n/start - начинает вечер\n/pipkasize - может измерить твою пипку;',
-                        '\n/whoami - скажет кто ты сегодня;',
-                        '\n/magicball - может дать небольшое предсказание по интересующему тебя вопросу.',
-                    ]
+    command_list = [
+        '\n/start - начинает вечер\n/pipkasize - может измерить твою пипку;',
+        '\n/whoami - скажет кто ты сегодня;',
+        '\n/magicball - может дать небольшое предсказание по интересующему тебя вопросу.',
+        '\n/fortune - может дать тебе новогоднее предсказание.',
+    ]
     admin_command_list = None
     if (message.from_id in config.admin_id_list and message.chat.type == 'private'):
-        admin_command_list =    [
-                                    '\n\nКоманды отладки и администрирования:'
-                                    '\n/setmain - устанавливает текущий чат в качестве основного. Работает только к групповых чатах;',
-                                    '\n/setbirthday Имя Фамилия - сохраняет текущий чат в качестве чата подготовки дня рождения указанного наполочника. Работает только в групповых чатах;',
-                                    '\n/getdb - отправляет актуальный файл базы данных. Работает только в личном чате.'
-                                ]
-    send_str = ''.join(map(str, command_list)) if admin_command_list is None else ''.join(map(str, command_list + admin_command_list))
+        admin_command_list = [
+            '\n\nКоманды отладки и администрирования:'
+            '\n/setmain - устанавливает текущий чат в качестве основного. Работает только к групповых чатах;',
+            '\n/setbirthday Имя Фамилия - сохраняет текущий чат в качестве чата подготовки дня рождения указанного наполочника. Работает только в групповых чатах;',
+            '\n/getdb - отправляет актуальный файл базы данных. Работает только в личном чате.',
+        ]
+    send_str = ''.join(map(str, command_list)) if admin_command_list is None else ''.join(
+        map(str, command_list + admin_command_list))
     await message.answer(f'Вот, что я умею:\n{send_str}')
 
 
@@ -71,8 +77,6 @@ async def today_members_edit_kb(callback: types.CallbackQuery):
     await callback.message.edit_reply_markup(new_kb_with_members)
 
 
-
-
 async def start_evening(callback: types.CallbackQuery):
     """
     Старт вечера. Наступает после выбора всех присутствующих сегодня пользователей.
@@ -90,8 +94,6 @@ async def end_evening(callback: types.CallbackQuery):
     await callback.answer('')
     await callback.message.delete()
     await callback.answer('Приятного вечера!')
-
-
 
 
 async def command_split_team(callback: types.CallbackQuery):
@@ -119,9 +121,6 @@ async def command_split_team_result(callback: types.CallbackQuery):
     await callback.message.answer('Выберите шонить', reply_markup=kb_today_menu)
 
 
-
-
-
 async def command_first_move(callback: types.CallbackQuery):
     """
     Рандомно выбирает пользователя из присутсвующих, который должен делать первый ход
@@ -134,9 +133,6 @@ async def command_first_move(callback: types.CallbackQuery):
     else:
         await callback.message.edit_text("Не заполнен список присутствующих. Нажмите /start, чтобы заполнить его")
     await callback.message.answer('Выберите шонить', reply_markup=kb_today_menu)
-
-
-
 
 
 async def command_choose_game_first_criterium(callback: types.CallbackQuery):
@@ -198,7 +194,8 @@ async def command_choose_game_result(callback: types.CallbackQuery):
     if callback.data == 'no_matter_type_game':
         game_teaming_criterium = None
 
-    result = choose_a_game(today_members, game_duration_criterium, game_teaming_criterium, game_speech_criterium)
+    result = choose_a_game(today_members, game_duration_criterium,
+                           game_teaming_criterium, game_speech_criterium)
     result_games_string = ''
     for game in result[0]:
         print(game)
@@ -207,7 +204,7 @@ async def command_choose_game_result(callback: types.CallbackQuery):
 
     if len(result_games_string) != 0:
         await callback.message.edit_text('На основе введённых данных я выбрал следующие игры:' + '\n' +
-                            f'{result_games_string}')
+                                         f'{result_games_string}')
     else:
         await callback.message.edit_text('Таких игр для вас не найдено')
     await callback.message.answer('Выберите шонить', reply_markup=kb_today_menu)
@@ -216,7 +213,7 @@ async def command_choose_game_result(callback: types.CallbackQuery):
 async def pipka_size(message: types.Message):
     """
     Команда '/pipkasize' ('пипка')
-    
+
     Замер пипки. У Сани всегда больше всех. 
     """
     reply_mention = ''
@@ -280,11 +277,11 @@ async def magic_ball_helper(message: types.Message):
     Активируется командой /magicball
     """
     await message.answer(f'Если хочешь получить небольшое предсказание, отправь сообщение с упоминанием меня, содержащее интересующий тебя вопрос вида да\нет.\n' +
-                            'В личном чате можешь не писать упоминание, просто отправь сообщение с вопросительным знаком.\n\n' +
-                            f'Пример: \"Эй, @{globals.BOT_USERNAME}, мы сегодня сыграем в монополию?\"\n\n' +
-                            'Если хочешь получить быстрое предсказание, добавь микрокоманду [быстро] в любое место текста.\n\n' +
-                            f'Пример: \"Эй, @{globals.BOT_USERNAME}, а в мафию сыграем? [быстро]\"\n' +
-                            f'или так: \"@{globals.BOT_USERNAME} [быстро] может хотя бы в магов?\"')
+                         'В личном чате можешь не писать упоминание, просто отправь сообщение с вопросительным знаком.\n\n' +
+                         f'Пример: \"Эй, @{globals.BOT_USERNAME}, мы сегодня сыграем в монополию?\"\n\n' +
+                         'Если хочешь получить быстрое предсказание, добавь микрокоманду [быстро] в любое место текста.\n\n' +
+                         f'Пример: \"Эй, @{globals.BOT_USERNAME}, а в мафию сыграем? [быстро]\"\n' +
+                         f'или так: \"@{globals.BOT_USERNAME} [быстро] может хотя бы в магов?\"')
 
 
 async def magic_ball(message: types.Message):
@@ -310,8 +307,9 @@ async def magic_ball(message: types.Message):
                     'Ты втираешь мне какую-то дичь..',
                     'Мои источники даже не сомневаются в успехе!',
                     'Да.',
-                    'Сконцентрируйся и попробуй спросить опять..',        
-                    'Иммолед импрувед, или в переводе - вероятность этого события крайне мала...']
+                    'Сконцентрируйся и попробуй спросить опять..',
+                    'Иммолед импрувед, или в переводе - вероятность этого события крайне мала...',
+                ]
     if '[быстро]' not in message.text:
         testing = await message.reply('Хмм... Посылаю сигнал в космос...📡')
         await sleep(2)
@@ -352,18 +350,23 @@ async def set_birthday_chat(message: types.Message):
     В случае возникновения ошибки отправляет её содержание в личный чат написавшего команду.
     """
     if (message.chat.type != 'private' and message.from_user.id in config.admin_id_list):
-        member_names_list = (message.text.removeprefix('/setbirthday ')).split(' ')
+        member_names_list = (message.text.removeprefix(
+            '/setbirthday ')).split(' ')
         try:
             if (len(member_names_list) == 2):
-                member = Member.get((Member.name == member_names_list[0]) & (Member.surname == member_names_list[1]))
+                member = Member.get((Member.name == member_names_list[0]) & (
+                    Member.surname == member_names_list[1]))
                 member.birthday_group_id = message.chat.id
                 member.save()
-                globals.scheduler.delete_job(f'{member.full_name}_birthday_notification')
-                globals.scheduler.add_job(prepare_birthday_notification_job(member))
+                globals.scheduler.delete_job(
+                    f'{member.full_name}_birthday_notification')
+                globals.scheduler.add_job(
+                    prepare_birthday_notification(member))
                 await message.answer(f'Чат сохранён в качестве чата подготовки к ДР наполочника: {member.full_name}.\nДата дня рождения: {member.birth_date}' +
-                                        '\nПришлю уведомление за две недели до праздника.')
+                                     '\nПришлю уведомление за две недели до праздника.')
             else:
-                raise Exception('На нашёл имени наполочника в тексте команды. Использование: /setbirthday Имя Фамилия')
+                raise Exception(
+                    'На нашёл имени наполочника в тексте команды. Использование: /setbirthday Имя Фамилия')
         except Exception as err:
             await message.answer('Не смог обновить поздравительный чат наполочника. Подробности отправил в личный чат.')
             await globals.dp.bot.send_message(message.from_user.id, f'При попытке обновить поздравительный чат наполочника произошла ошибка: {err}')
@@ -379,6 +382,28 @@ async def get_db_command(message: types.Message):
         await message.answer_document(document=db_file, caption='Файл базы данных.')
     else:
         await unknown_command(message)
+
+
+async def get_new_year_fortune(message: types.Message):
+    sender_member = Member.get_or_none(Member.telegram_id == message.from_id)
+    if sender_member is None:
+        log.info(f"In get_new_year_fortune got unknown telegram_id. From user: {message.from_user.username}")
+    sender_name = sender_member.name if sender_member is not None else message.from_user.username
+    fortune_template = f"{sender_name}, в новом году ты обязательно"
+    generated_fortune = None
+    reply_message = await message.reply("Сканирую базу Деда Мороза...🎅")
+    aiohttp_session = ClientSession()
+    if randint(0, 1000) % 3 == 0:
+        # Balaboba won't put space in the begining of the generated text, so we put it manually
+        generated_fortune = " " + await congrats_from_yandex(aiohttp_session, fortune_template, intro=6)
+    else:
+        generated_fortune = await congrats_from_porfirii(aiohttp_session, fortune_template, length=40)
+    generated_fortune = generated_fortune if generated_fortune is not None else \
+        f" сможешь всё. А вот мои нейромозги пока не работают..."
+    await aiohttp_session.close()
+    await reply_message.edit_text("Гадаю по звуку салютов...🎆")
+    await sleep(2)
+    await reply_message.edit_text(f"{fortune_template}{generated_fortune}")
 
 
 async def unknown_command(message: types.Message):
@@ -412,8 +437,6 @@ async def command_delete_game():
     pass
 
 
-
-
 async def get_active_members_from_database():
     """
     Забирает пользователей, у которых есть параметр is_active, из базы данных
@@ -439,12 +462,15 @@ async def create_inline_keyboard_with_members(list_of_members: list):
     """
     Создаёт инлайн клавиатуру с теми пользователями, которые пришли на вход
     """
-    kb_with_members = InlineKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+    kb_with_members = InlineKeyboardMarkup(
+        resize_keyboard=True, one_time_keyboard=True)
     for member in list_of_members:
-        member_button = InlineKeyboardButton(f'{member.full_name}', callback_data=f"{member.id}")
+        member_button = InlineKeyboardButton(
+            f'{member.full_name}', callback_data=f"{member.id}")
         kb_with_members.add(member_button)
 
-    exit_members_button = InlineKeyboardButton('Закончить', callback_data="exit_member_chose")
+    exit_members_button = InlineKeyboardButton(
+        'Закончить', callback_data="exit_member_chose")
     kb_with_members.add(exit_members_button)
     return kb_with_members
 
@@ -462,17 +488,15 @@ async def split_teams(teams_count, callback):
         member = []
         list_of_lists.append(member)
 
-
-    i=0
+    i = 0
     while i < teams_count:
         while len(list_of_lists[i]) < teams_size_without_remainder:
-            list_of_lists[i].append(list_of_members.pop(random.randrange(0, len(list_of_members))))
+            list_of_lists[i].append(list_of_members.pop(
+                random.randrange(0, len(list_of_members))))
         i += 1
 
-
     for member in list_of_members:
-        list_of_lists[random.randrange(0,len(list_of_lists)-1)].append(member)
-
+        list_of_lists[random.randrange(0, len(list_of_lists)-1)].append(member)
 
     await print_splited_teams(list_of_lists, callback)
 

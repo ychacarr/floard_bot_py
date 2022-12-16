@@ -394,7 +394,6 @@ async def get_new_year_fortune(message: types.Message):
     reply_message = await message.reply("Сканирую базу Деда Мороза...🎅")
     aiohttp_session = ClientSession()
     if randint(0, 1000) % 5 == 0:
-        # Balaboba won't put space in the begining of the generated text, so we put it manually
         generated_fortune = await congrats_from_yandex(aiohttp_session, fortune_template, intro=6)
     else:
         generated_fortune = await congrats_from_porfirii(aiohttp_session, fortune_template, length=40)

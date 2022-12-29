@@ -27,7 +27,7 @@ def register_handlers(dp: Dispatcher):
     dp.register_callback_query_handler(second_individual_preferences, text=['0_pref', '1_pref', '2_pref', '3_pref', 'its_me'])
 
     dp.register_message_handler(command_birthdays, commands=['birthdays'])
-    dp.register_message_handler(command_congratulation, commands=['congrats'])
+    # dp.register_message_handler(command_congratulation, commands=['congrats'])
     dp.register_message_handler(command_add_game, commands=['add_game'])
     dp.register_message_handler(command_add_member, commands=['add_member'])
     dp.register_message_handler(command_delete_member, commands=['delete_member'])
@@ -41,6 +41,7 @@ def register_handlers(dp: Dispatcher):
     dp.register_message_handler(who_am_i, commands=['whoami'])
     dp.register_message_handler(magic_ball_helper, commands=['magicball'])
     dp.register_message_handler(get_new_year_fortune, commands=['fortune'])
+    dp.register_message_handler(congratulate_command, commands=['congratulate'])
     # схема реакции хендлера аналогична хендлеру команды "пипка". Текст активации: "кто я сегодня?"
     dp.register_message_handler(who_am_i, lambda msg:
                                                 (msg.chat.type == 'private' and 'кто я сегодня?' in msg.text.lower()) or

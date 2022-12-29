@@ -407,7 +407,10 @@ async def get_new_year_fortune(message: types.Message):
 
 
 async def congratulate_command(message: types.Message):
-    name = message.text.removeprefix("/congratulate ")
+    if globals.BOT_USERNAME in message.text:
+        name = message.text.removeprefix(f"/congratulate@{globals.BOT_USERNAME} ")
+    else:
+        name = message.text.removeprefix("/congratulate ")
     name = name.title()
     ai_congrats = ""
     async with ClientSession() as aiohttp_session:

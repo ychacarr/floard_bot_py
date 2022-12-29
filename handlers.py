@@ -1,12 +1,11 @@
 from asyncio import sleep
 from datetime import datetime
-from genericpath import commonprefix
 from aiogram import types
 from keyboards_and_buttons import *
 import random
 from database import *
 import copy
-from random import randint
+from random import randint, choice
 import globals
 from data import config
 from congratulations import prepare_birthday_notification, congrats_from_porfirii, congrats_from_yandex
@@ -31,10 +30,12 @@ async def command_start(message: types.Message):
 
 async def command_help(message: types.Message):
     command_list = [
-        '\n/start - начинает вечер\n/pipkasize - может измерить твою пипку;',
+        '\n/start - начинает вечер',
+        '\n/pipkasize - может измерить твою пипку;',
         '\n/whoami - скажет кто ты сегодня;',
         '\n/magicball - может дать небольшое предсказание по интересующему тебя вопросу.',
         '\n/fortune - может дать тебе новогоднее предсказание.',
+        '\n/congratulate Имя - поможет поздравить друга с Новым Годом.',
     ]
     admin_command_list = None
     if (message.from_id in config.admin_id_list and message.chat.type == 'private'):
@@ -311,15 +312,15 @@ async def magic_ball(message: types.Message):
                     'Иммолед импрувед, или в переводе - вероятность этого события крайне мала...',
                 ]
     if '[быстро]' not in message.text:
-        testing = await message.reply('Хмм... Посылаю сигнал в космос...📡')
+        answer_message = await message.reply('Хмм... Посылаю сигнал в космос...📡')
         await sleep(2)
-        await testing.edit_text('...Стучусь в пятый дом Юпитера...🔮')
+        await answer_message.edit_text('...Стучусь в пятый дом Юпитера...🔮')
         await sleep(2)
-        await testing.edit_text('...Ищу номера в слове \"нумерология\"...🎱')
+        await answer_message.edit_text('...Ищу номера в слове \"нумерология\"...🎱')
         await sleep(2)
-        await testing.edit_text(f'{replies_list[randint(0, len(replies_list) - 1)]}')
+        await answer_message.edit_text(f'{choice(replies_list)}')
     else:
-        await message.reply(f'{replies_list[randint(0, len(replies_list)) - 1]}')
+        await message.reply(f'{choice(replies_list)}')
 
 
 async def set_main_chat(message: types.Message):
@@ -394,7 +395,6 @@ async def get_new_year_fortune(message: types.Message):
     reply_message = await message.reply("Сканирую базу Деда Мороза...🎅")
     aiohttp_session = ClientSession()
     if randint(0, 1000) % 5 == 0:
-        # Balaboba won't put space in the begining of the generated text, so we put it manually
         generated_fortune = await congrats_from_yandex(aiohttp_session, fortune_template, intro=6)
     else:
         generated_fortune = await congrats_from_porfirii(aiohttp_session, fortune_template, length=40)
@@ -404,6 +404,30 @@ async def get_new_year_fortune(message: types.Message):
     await reply_message.edit_text("Гадаю по звуку салютов...🎆")
     await sleep(2)
     await reply_message.edit_text(f"{fortune_template}{generated_fortune}")
+
+
+async def congratulate_command(message: types.Message):
+    name = message.text.removeprefix("/congratulate ")
+    name = name.title()
+    ai_congrats = ""
+    async with ClientSession() as aiohttp_session:
+        if randint(0, 1000) % 4 == 0:
+            ai_congrats = await congrats_from_yandex(aiohttp_session, name, intro=20)
+            if ai_congrats is None:
+                ai_congrats = f"{name}! с НГ тебя! Щастя, здаровя, всего всего и побольше!"
+        else:
+            congrats_starters = [
+                ", поздравляю тебя с Новым Годом!",
+                ", с Новым Годом!",
+                ", спешу поздравить тебя с наступающим 2023 годом!",
+                ", я буду прост, так что просто поздравляю!",
+            ]
+            chosen_starter = name + choice(congrats_starters)
+            ai_congrats = await congrats_from_porfirii(aiohttp_session, chosen_starter, length=30)
+            if ai_congrats is None:
+                ai_congrats = ""
+            ai_congrats = chosen_starter + ai_congrats
+    await message.reply(ai_congrats)
 
 
 async def unknown_command(message: types.Message):
@@ -417,8 +441,8 @@ async def command_birthdays():
     pass
 
 
-async def command_congratulation():
-    pass
+# async def command_congratulation():
+#     pass
 
 
 async def command_add_member():

@@ -5,6 +5,7 @@ from datetime import datetime as dt, timedelta
 from aiohttp import ClientSession
 import logging
 from typing import Optional
+from aiogram.utils.exceptions import BadRequest as BadRequestError
 
 log = logging.getLogger('congratulations_module')
 
@@ -73,7 +74,7 @@ async def write_congrats(member_id: int):
 
     member_id -- id участника, для которого будет сгенерировано и отправлено поздравление
     """
-    member = Member.get_by_id(member_id)
+    member:Member = Member.get_by_id(member_id)
     congrats_text = f"{member.name}! Поздравляю тебя с днём рождения! Желаю, как и всегда, здоровья, счастья и "
     async for congrats in congrats_generator(congrats_text):
         if congrats != None:
@@ -82,8 +83,14 @@ async def write_congrats(member_id: int):
     if globals.MAIN_CHAT_ID is None:
         await globals.dp.bot.send_message(member.telegram_id, congrats_text)
     else:
-        member_tlg_info = await globals.dp.bot.get_chat_member(globals.MAIN_CHAT_ID, member.telegram_id)
-        await globals.dp.bot.send_message(globals.MAIN_CHAT_ID, f'@{member_tlg_info.user.username}\n{congrats_text}')
+        text_with_username = ""
+        try:
+            member_tlg_info = await globals.dp.bot.get_chat_member(globals.MAIN_CHAT_ID, member.telegram_id)
+            text_with_username = f"@{member_tlg_info.user.username}\n{congrats_text}"
+        except BadRequestError:
+            log.error(f"Can\'t get Telegram user. Member name: {member.full_name}")
+            text_with_username = f"{congrats_text}"
+        await globals.dp.bot.send_message(globals.MAIN_CHAT_ID, text_with_username)
 
 
 async def write_notification(member_id: int):

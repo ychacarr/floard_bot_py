@@ -145,7 +145,7 @@ def prepare_birthday_notification(member, period: timedelta = timedelta(weeks=2)
     now_year = dt.now().year
     birtday = dt.strptime(member.birth_date, '%d-%m-%Y')
     birtday = (birtday - period)
-    birtday = birtday.replace(year=now_year, hour=13, minute=0)
+    birtday = birtday.replace(year=now_year, hour=13, minute=15)
     notification_date_str = birtday.strftime('%d.%m.%y %H:%M')
     return Job(
         f'{member.full_name}_birthday_notification',
@@ -165,7 +165,7 @@ def prepare_congratulation_jobs() -> None:
     Если у наполочника задан birthday_group_id, вызывает prepare_birthday_notification_job и добавляет работу в список globals.scheduler
     """
     for member in Member:
-        if member.telegram_id is not None:
-            globals.scheduler.add_job(prepare_congratulation(member))
+        # if member.telegram_id is not None:
+        globals.scheduler.add_job(prepare_congratulation(member))
         if member.birthday_group_id is not None:
             globals.scheduler.add_job(prepare_birthday_notification(member))

@@ -119,7 +119,7 @@ def prepare_congratulation(member) -> Job:
     """
     now_year = dt.now().year
     birtday = dt.strptime(member.birth_date, '%d-%m-%Y')
-    birtday = birtday.replace(year=now_year, hour=12, minute=0)
+    birtday = birtday.replace(year=now_year, hour=13, minute=20)
     birtday_str = birtday.strftime('%d.%m.%y %H:%M')
     return Job(
         f'{member.full_name}_birthday',

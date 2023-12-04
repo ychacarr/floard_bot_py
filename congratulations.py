@@ -20,7 +20,7 @@ async def congrats_from_porfirii(session: ClientSession, base_congrats: str, **k
     generated_text_lenght = 50 if len(kwargs) == 0 else kwargs["length"]
     post_payload = {"prompt": base_congrats, "length": generated_text_lenght}
     log.info('Trying to connect to porfirii API...')
-    async with session.post('https://pelevin.gpt.dobro.ai/generate/', json=post_payload) as resp:
+    async with session.post('https://api.porfirevich.com/generate/', json=post_payload) as resp:
         if resp.status == 200:
             log.info(
                 'Connection to porfirii API successfull. Generating congratulations.')
@@ -64,7 +64,7 @@ async def congrats_generator(congrats_template: str) -> str:
     """
     async with ClientSession() as session:
         yield await congrats_from_porfirii(session, congrats_template)
-        yield await congrats_from_yandex(session, congrats_template)
+        # yield await congrats_from_yandex(session, congrats_template)
         yield "... мои нейронные облака сломались. Поэтому просто всего!"
 
 
